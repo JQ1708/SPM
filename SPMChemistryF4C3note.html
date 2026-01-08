@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Chapter 3: Formula & Chemical Equations</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #f8fafc;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .handwritten {
+            font-family: 'Patrick Hand', cursive;
+            color: #2563eb; /* Blue ink */
+            transform: rotate(-0.5deg);
+        }
+        .handwritten-red {
+            font-family: 'Patrick Hand', cursive;
+            color: #dc2626; /* Red ink for corrections/emphasis */
+        }
+        .paper-bg {
+            background-color: #fff;
+            background-image: 
+                linear-gradient(#e5e7eb 1px, transparent 1px),
+                linear-gradient(90deg, #e5e7eb 1px, transparent 1px);
+            background-size: 20px 20px;
+            background-position: -2px -2px;
+        }
+        .calc-card {
+            transition: all 0.3s ease;
+        }
+        .calc-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        .subscript {
+            vertical-align: sub;
+            font-size: 0.7em;
+        }
+        .superscript {
+            vertical-align: super;
+            font-size: 0.7em;
+        }
+        .arrow-right {
+            display: inline-block;
+            margin: 0 4px;
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background-color: #94a3b8; border-radius: 3px; }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade { animation: fadeIn 0.4s ease-out forwards; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        // --- SVGs ---
+        
+        // The "Mole Flow" Visualization - Redesigned
+        const MoleFlow = () => (
+            <svg viewBox="0 0 600 400" className="w-full max-w-2xl mx-auto my-4 font-sans">
+                <defs>
+                    <marker id="arrowHead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#4b5563" />
+                    </marker>
+                </defs>
+
+                {/* Central Hub: MOLES */}
+                <rect x="250" y="170" width="100" height="60" rx="10" fill="#fbbf24" stroke="#d97706" strokeWidth="3" />
+                <text x="300" y="200" textAnchor="middle" fontSize="16" fontWeight="bold" fill="#78350f">MOLES</text>
+                <text x="300" y="220" textAnchor="middle" fontSize="12" fill="#78350f">(n)</text>
+
+                {/* Top: MASS */}
+                <g transform="translate(0, -20)">
+                    <rect x="250" y="20" width="100" height="50" rx="5" fill="#dbeafe" stroke="#2563eb" strokeWidth="2" />
+                    <text x="300" y="50" textAnchor="middle" fontWeight="bold" fill="#1e40af">MASS (g)</text>
+                    
+                    {/* Paths: Mass <-> Moles */}
+                    {/* Down (Mass -> Moles) */}
+                    <path d="M280,70 L280,160" stroke="#4b5563" strokeWidth="2" markerEnd="url(#arrowHead)" />
+                    <rect x="260" y="100" width="40" height="20" fill="white" stroke="#9ca3af" rx="3"/>
+                    <text x="280" y="114" textAnchor="middle" fontSize="10" fill="#4b5563">÷ Mr</text>
+
+                    {/* Up (Moles -> Mass) */}
+                    <path d="M320,170 L320,80" stroke="#4b5563" strokeWidth="2" markerEnd="url(#arrowHead)" />
+                    <rect x="300" y="110" width="40" height="20" fill="white" stroke="#9ca3af" rx="3"/>
+                    <text x="320" y="124" textAnchor="middle" fontSize="10" fill="#4b5563">× Mr</text>
+                </g>
+
+                {/* Left: VOLUME */}
+                <g transform="translate(0, 0)">
+                    <rect x="20" y="175" width="100" height="50" rx="5" fill="#d1fae5" stroke="#059669" strokeWidth="2" />
+                    <text x="70" y="205" textAnchor="middle" fontWeight="bold" fill="#065f46">VOLUME</text>
+                    
+                    {/* Paths: Volume <-> Moles */}
+                    {/* Right (Vol -> Moles) */}
+                    <path d="M120,190 L240,190" stroke="#4b5563" strokeWidth="2" markerEnd="url(#arrowHead)" />
+                    <rect x="155" y="175" width="50" height="20" fill="white" stroke="#9ca3af" rx="3"/>
+                    <text x="180" y="189" textAnchor="middle" fontSize="10" fill="#4b5563">÷ 24</text>
+
+                    {/* Left (Moles -> Vol) */}
+                    <path d="M250,210 L130,210" stroke="#4b5563" strokeWidth="2" markerEnd="url(#arrowHead)" />
+                    <rect x="165" y="215" width="50" height="20" fill="white" stroke="#9ca3af" rx="3"/>
+                    <text x="190" y="229" textAnchor="middle" fontSize="10" fill="#4b5563">× 24</text>
+                </g>
+
+                {/* Right: PARTICLES */}
+                <g transform="translate(0, 0)">
+                    <rect x="480" y="175" width="100" height="50" rx="5" fill="#fce7f3" stroke="#db2777" strokeWidth="2" />
+                    <text x="530" y="205" textAnchor="middle" fontWeight="bold" fill="#9d174d">PARTICLES</text>
+                    
+                    {/* Paths: Particles <-> Moles */}
+                    {/* Left (Particles -> Moles) */}
+                    <path d="M480,190 L360,190" stroke="#4b5563" strokeWidth="2" markerEnd="url(#arrowHead)" />
+                    <rect x="395" y="175" width="50" height="20" fill="white" stroke="#9ca3af" rx="3"/>
+                    <text x="420" y="189" textAnchor="middle" fontSize="10" fill="#4b5563">÷ Nₐ</text>
+
+                    {/* Right (Moles -> Particles) */}
+                    <path d="M350,210 L470,210" stroke="#4b5563" strokeWidth="2" markerEnd="url(#arrowHead)" />
+                    <rect x="385" y="215" width="50" height="20" fill="white" stroke="#9ca3af" rx="3"/>
+                    <text x="410" y="229" textAnchor="middle" fontSize="10" fill="#4b5563">× Nₐ</text>
+                </g>
+                
+                {/* Constants Key */}
+                <g transform="translate(180, 330)">
+                   <rect x="0" y="0" width="240" height="50" rx="5" fill="#f3f4f6" stroke="#d1d5db" />
+                   <text x="120" y="20" textAnchor="middle" fontSize="10" fill="#374151" fontWeight="bold">Key Constants:</text>
+                   <text x="120" y="35" textAnchor="middle" fontSize="10" fill="#374151">Mr = Molar Mass | Nₐ = 6.02 × 10²³ | Vol = 22.4 (STP) or 24 (RTP)</text>
+                </g>
+
+            </svg>
+        );
+
+        // Experiment: Crucible (MgO)
+        const CrucibleSetup = () => (
+            <svg viewBox="0 0 200 150" className="w-full h-32">
+                <defs>
+                    <linearGradient id="fire" x1="0" x2="1" y1="0" y2="0">
+                        <stop offset="0%" stopColor="yellow"/>
+                        <stop offset="50%" stopColor="orange"/>
+                        <stop offset="100%" stopColor="red"/>
+                    </linearGradient>
+                </defs>
+                {/* Tripod */}
+                <line x1="70" y1="140" x2="90" y2="90" stroke="#333" strokeWidth="2"/>
+                <line x1="130" y1="140" x2="110" y2="90" stroke="#333" strokeWidth="2"/>
+                <line x1="90" y1="90" x2="110" y2="90" stroke="#333" strokeWidth="2"/>
+                {/* Flame */}
+                <path d="M95,130 Q100,80 105,130" fill="url(#fire)" />
+                {/* Pipeclay Triangle */}
+                <line x1="85" y1="90" x2="115" y2="90" stroke="brown" strokeWidth="2"/>
+                {/* Crucible */}
+                <path d="M90,70 L110,70 L108,88 L92,88 Z" fill="#e5e7eb" stroke="#374151" strokeWidth="1"/>
+                <path d="M90,68 L110,68 Q100,60 90,68" fill="#e5e7eb" stroke="#374151" strokeWidth="1"/> 
+                <text x="130" y="75" fontSize="8" fill="#374151">Crucible + Lid</text>
+                <line x1="110" y1="75" x2="128" y2="75" stroke="#9ca3af" strokeWidth="0.5"/>
+            </svg>
+        );
+
+        // Experiment: Combustion Tube (CuO)
+        const CombustionSetup = () => (
+            <svg viewBox="0 0 300 120" className="w-full h-32">
+                {/* Tube */}
+                <rect x="50" y="40" width="200" height="40" rx="5" fill="none" stroke="#374151" strokeWidth="2"/>
+                {/* Copper Boat */}
+                <rect x="130" y="65" width="40" height="10" fill="#b45309" />
+                <text x="150" y="62" fontSize="8" textAnchor="middle">CuO (Black)</text>
+                {/* Gas In */}
+                <path d="M10,60 L50,60" stroke="#3b82f6" strokeWidth="2" markerEnd="url(#blueArrow)"/>
+                <text x="30" y="55" fontSize="8" fill="#2563eb">H₂ Gas</text>
+                {/* Gas Out */}
+                <path d="M250,60 L290,60" stroke="#3b82f6" strokeWidth="2"/>
+                <text x="270" y="55" fontSize="8" fill="#2563eb">Excess H₂</text>
+                {/* Heat */}
+                <text x="150" y="95" fontSize="12" textAnchor="middle">🔥 Heat</text>
+                 <defs>
+                    <marker id="blueArrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+                        <path d="M0,0 L0,6 L9,3 z" fill="#3b82f6" />
+                    </marker>
+                </defs>
+            </svg>
+        );
+
+        // --- Calculation Card Component ---
+        const CalculationCard = ({ title, question, solution, hint }) => {
+            const [isOpen, setIsOpen] = useState(false);
+            return (
+                <div className="bg-white rounded-xl shadow-md border border-blue-100 overflow-hidden mb-4 calc-card">
+                    <div className="p-4 bg-blue-50 border-b border-blue-100 flex justify-between items-center cursor-pointer" onClick={() => setIsOpen(!isOpen)}>
+                        <h3 className="font-bold text-blue-900">{title}</h3>
+                        <span className="text-blue-500 text-sm">{isOpen ? 'Hide Solution' : 'Show Solution'}</span>
+                    </div>
+                    <div className="p-4">
+                        <p className="mb-4 text-gray-800 font-medium" dangerouslySetInnerHTML={{ __html: question }}></p>
+                        {hint && !isOpen && <p className="text-gray-500 text-sm italic">Hint: {hint}</p>}
+                        {isOpen && (
+                            <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200 paper-bg animate-fade">
+                                <div className="handwritten text-lg whitespace-pre-line" dangerouslySetInnerHTML={{ __html: solution }}></div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        // --- Navigation Component ---
+        const NavBar = ({ active, setActive }) => {
+            const tabs = [
+                { id: 'mindmap', label: 'Mind Map' },
+                { id: 'masses', label: 'Relative Masses' },
+                { id: 'moles', label: 'The Mole' },
+                { id: 'formulas', label: 'Formulae' },
+                { id: 'stoichiometry', label: 'Stoichiometry' },
+                { id: 'empirical', label: 'Empirical' }
+            ];
+            return (
+                <div className="sticky top-0 bg-white shadow-md z-50 overflow-x-auto">
+                    <div className="flex space-x-2 p-2 max-w-4xl mx-auto">
+                        {tabs.map(tab => (
+                            <button
+                                key={tab.id}
+                                onClick={() => { setActive(tab.id); window.scrollTo(0,0); }}
+                                className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-bold transition-colors ${
+                                    active === tab.id ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                }`}
+                            >
+                                {tab.label}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            );
+        };
+
+        // --- Sections ---
+
+        const MindMap = ({ setActive }) => (
+            <div className="p-6 text-center animate-fade">
+                <h1 className="text-3xl font-extrabold text-blue-900 mb-2">Chapter 3</h1>
+                <h2 className="text-xl text-blue-700 mb-8">Formula & Chemical Equations</h2>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto">
+                    {[
+                        { id: 'masses', title: '1. Relative Masses', desc: 'RAM, RMM, RFM', color: 'bg-green-100 text-green-800' },
+                        { id: 'moles', title: '2. The Mole Concept', desc: 'n = m/M, n = V/24, n = N/Nₐ', color: 'bg-yellow-100 text-yellow-800' },
+                        { id: 'formulas', title: '3. Chemical Formulae', desc: 'Ionic Charges & Balancing', color: 'bg-purple-100 text-purple-800' },
+                        { id: 'stoichiometry', title: '4. Stoichiometry', desc: 'Calculations from Equations', color: 'bg-red-100 text-red-800' },
+                        { id: 'empirical', title: '5. Empirical Formula', desc: 'Experiments & Calculation', color: 'bg-blue-100 text-blue-800' }
+                    ].map(item => (
+                        <div key={item.id} onClick={() => setActive(item.id)} className={`${item.color} p-6 rounded-xl shadow cursor-pointer transform hover:scale-105 transition-transform`}>
+                            <h3 className="text-lg font-bold">{item.title}</h3>
+                            <p className="opacity-80">{item.desc}</p>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+
+        const RelativeMasses = () => (
+            <div className="p-4 max-w-3xl mx-auto animate-fade">
+                <h2 className="text-2xl font-bold text-gray-800 mb-6 border-b-4 border-green-400 inline-block">1. Relative Masses</h2>
+                
+                <div className="bg-gray-50 p-4 rounded-lg mb-6 text-sm">
+                    <p><strong>RAM (Ar):</strong> Average mass of one atom compared to 1/12 of Carbon-12.</p>
+                    <p><strong>RMM (Mr):</strong> Sum of RAMs in a molecule.</p>
+                </div>
+
+                <CalculationCard 
+                    title="Comparison Question" 
+                    question="If RAM of Magnesium is 24 and Carbon is 12, how many times is one Mg atom heavier than one C atom?" 
+                    solution="24 / 12 = 2 times heavier"
+                />
+
+                <CalculationCard 
+                    title="Unknown Element U" 
+                    question="Element U is 12 times heavier than Neon (RAM=4). What is the RAM of U?" 
+                    solution="U / 4 = 12<br/>U = 12 x 4<br/>U = 48"
+                />
+
+                <CalculationCard 
+                    title="Complex Comparison" 
+                    question="10 atoms of element X is 2 times heavier than 13 Neon atoms (RAM=20). Calculate RAM of X." 
+                    hint="Find total mass of Neon side first."
+                    solution="Mass of 13 Ne atoms = 13 x 20 = 260<br/>Total Mass X is 2 times heavier = 260 x 2 = 520<br/>10 X = 520<br/>X = 52"
+                />
+
+                <h3 className="font-bold text-lg mt-8 mb-4">Calculate Relative Molecular Mass (Mr)</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <CalculationCard 
+                        title="Water (H₂O)" 
+                        question="H=1, O=16" 
+                        solution="2(1) + 16 = 18"
+                    />
+                    <CalculationCard 
+                        title="Copper(II) Sulphate (CuSO₄)" 
+                        question="Cu=64, S=32, O=16" 
+                        solution="64 + 32 + 4(16) = 160"
+                    />
+                    <CalculationCard 
+                        title="Hydrated Copper Sulphate (CuSO₄·5H₂O)" 
+                        question="Cu=64, S=32, O=16, H=1" 
+                        solution="CuSO₄ = 160<br/>5H₂O = 5[2(1)+16] = 5(18) = 90<br/>Total = 160 + 90 = 250"
+                    />
+                </div>
+            </div>
+        );
+
+        const TheMole = () => (
+            <div className="p-4 max-w-3xl mx-auto animate-fade">
+                <h2 className="text-2xl font-bold text-gray-800 mb-6 border-b-4 border-yellow-400 inline-block">2. The Mole Concept</h2>
+                
+                <p className="mb-4 text-gray-600 text-sm">Follow the arrows to see whether to multiply or divide.</p>
+                <MoleFlow />
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-center text-xs font-mono mb-6 bg-gray-100 p-2 rounded">
+                    <div>Nₐ = 6.02 × 10²³</div>
+                    <div>STP Volume = 22.4 dm³</div>
+                    <div>RTP Volume = 24 dm³</div>
+                </div>
+
+                <h3 className="font-bold text-lg mb-4 text-blue-800">Type A: Mole ↔ Mass (n = m / M)</h3>
+                <CalculationCard 
+                    title="Moles from Mass" 
+                    question="Determine moles in 6g of Carbon. (Ar C = 12)" 
+                    solution="n = m / Mr<br/>n = 6 / 12<br/>n = 0.5 mol"
+                />
+                <CalculationCard 
+                    title="Mass from Moles" 
+                    question="Find the mass of 0.5 mol of Magnesium. (Ar Mg = 24)" 
+                    solution="0.5 = m / 24<br/>m = 0.5 x 24<br/>m = 12 g"
+                />
+
+                <h3 className="font-bold text-lg mb-4 mt-8 text-green-800">Type B: Mole ↔ Volume (Gas)</h3>
+                <CalculationCard 
+                    title="Volume at STP" 
+                    question="What is the volume of 44g of CO₂ gas at STP? (Mr CO₂ = 44)" 
+                    solution="1. Find Moles:<br/>n = 44 / 44 = 1 mol<br/><br/>2. Find Volume:<br/>V = n x 22.4<br/>V = 1 x 22.4 = 22.4 dm³"
+                />
+                 <CalculationCard 
+                    title="Volume at Room Conditions (RTP)" 
+                    question="Calculate volume of 2 moles of O₂ gas at RTP." 
+                    solution="V = n x 24<br/>V = 2 x 24<br/>V = 48 dm³"
+                />
+
+                <h3 className="font-bold text-lg mb-4 mt-8 text-pink-800">Type C: Mole ↔ Particles</h3>
+                <CalculationCard 
+                    title="Number of Atoms" 
+                    question="Find the number of atoms in 48g of Magnesium. (Mg=24)" 
+                    solution="1. Moles: n = 48 / 24 = 2 mol<br/>2. Particles: N = n x Nₐ<br/>N = 2 x 6.02 x 10²³<br/>N = 1.204 x 10²⁴ atoms"
+                />
+                <CalculationCard 
+                    title="Molecules vs Atoms" 
+                    question="1 mol of Oxygen Gas (O₂). How many atoms?" 
+                    solution="1 mol O₂ molecules = 6.02 x 10²³ molecules.<br/>Each molecule has 2 atoms.<br/>Total atoms = 2 x 6.02 x 10²³<br/>= 1.204 x 10²⁴ atoms"
+                />
+            </div>
+        );
+
+        const Formulas = () => (
+            <div className="p-4 max-w-3xl mx-auto animate-fade">
+                <h2 className="text-2xl font-bold text-gray-800 mb-6 border-b-4 border-purple-400 inline-block">3. Formulae & Equations</h2>
+
+                <div className="bg-purple-50 p-4 rounded-lg mb-6">
+                    <h3 className="font-bold text-purple-900 mb-2">Ionic Formula Building (Crossing Over)</h3>
+                    <p className="text-sm mb-2">1. Identify Cation (+) and Anion (-)</p>
+                    <p className="text-sm mb-2">2. Cross the charge numbers to the subscript.</p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <CalculationCard 
+                        title="Aluminium Oxide" 
+                        question="Al³⁺ and O²⁻" 
+                        solution="Al₂O₃"
+                    />
+                    <CalculationCard 
+                        title="Magnesium Hydroxide" 
+                        question="Mg²⁺ and OH⁻" 
+                        solution="Mg(OH)₂<br/><span class='text-xs text-gray-500'>(Bracket needed for polyatomic ions!)</span>"
+                    />
+                    <CalculationCard 
+                        title="Ammonium Sulphate" 
+                        question="NH₄⁺ and SO₄²⁻" 
+                        solution="(NH₄)₂SO₄"
+                    />
+                     <CalculationCard 
+                        title="Zinc Chloride" 
+                        question="Zn²⁺ and Cl⁻" 
+                        solution="ZnCl₂"
+                    />
+                </div>
+
+                <h3 className="font-bold text-lg mt-8 mb-4">Balancing Equations</h3>
+                <p className="text-sm text-gray-600 mb-4">Make sure number of atoms is same on Left and Right.</p>
+                
+                <CalculationCard 
+                    title="Reaction 1" 
+                    question="Na + H₂O → NaOH + H₂" 
+                    solution="2Na + 2H₂O → 2NaOH + H₂"
+                />
+                <CalculationCard 
+                    title="Reaction 2" 
+                    question="Fe + Cl₂ → FeCl₃" 
+                    solution="2Fe + 3Cl₂ → 2FeCl₃"
+                />
+            </div>
+        );
+
+        const Stoichiometry = () => (
+            <div className="p-4 max-w-3xl mx-auto animate-fade">
+                <h2 className="text-2xl font-bold text-gray-800 mb-6 border-b-4 border-red-400 inline-block">4. Stoichiometry</h2>
+                <p className="mb-4 text-gray-600">Using the Mole Ratio from the Balanced Equation.</p>
+
+                <div className="bg-red-50 p-4 rounded-lg mb-6 text-sm">
+                    <strong>Steps:</strong>
+                    <ol className="list-decimal pl-5 mt-2 space-y-1">
+                        <li>Write Balanced Equation.</li>
+                        <li>Convert known quantity (Mass/Vol) to <strong>Moles</strong>.</li>
+                        <li>Use Ratio to find Moles of unknown.</li>
+                        <li>Convert Moles back to desired unit (Mass/Vol).</li>
+                    </ol>
+                </div>
+
+                <CalculationCard 
+                    title="Mass to Mass" 
+                    question="2Na + Cl₂ → 2NaCl<br/>What is the mass of NaCl formed when 2.3g of Sodium reacts? (Na=23, Cl=35.5)" 
+                    solution="1. Mol Na = 2.3 / 23 = 0.1 mol<br/>2. Ratio Na : NaCl is 2 : 2 (or 1 : 1)<br/>3. Mol NaCl = 0.1 mol<br/>4. Mass NaCl = 0.1 x (23+35.5) = 0.1 x 58.5<br/>= 5.85 g"
+                />
+
+                <CalculationCard 
+                    title="Mass to Volume (Gas)" 
+                    question="Zn + 2HCl → ZnCl₂ + H₂<br/>6.5g of Zinc reacts. Find volume of H₂ produced at RTP. (Zn=65, RTP=24)" 
+                    solution="1. Mol Zn = 6.5 / 65 = 0.1 mol<br/>2. Ratio Zn : H₂ is 1 : 1<br/>3. Mol H₂ = 0.1 mol<br/>4. Vol H₂ = 0.1 x 24<br/>= 2.4 dm³ (or 2400 cm³)"
+                />
+
+                <CalculationCard 
+                    title="Volume to Mass" 
+                    question="C₂H₄ + 3O₂ → 2CO₂ + 2H₂O<br/>If 42g of Ethene is burned, what is mass of CO₂ produced? (C=12, H=1, O=16)" 
+                    solution="1. Mr C₂H₄ = 28. Mol = 42/28 = 1.5 mol<br/>2. Ratio C₂H₄ : CO₂ is 1 : 2<br/>3. Mol CO₂ = 1.5 x 2 = 3.0 mol<br/>4. Mass CO₂ = 3 x 44<br/>= 132 g"
+                />
+            </div>
+        );
+
+        const Empirical = () => (
+            <div className="p-4 max-w-3xl mx-auto animate-fade">
+                <h2 className="text-2xl font-bold text-gray-800 mb-6 border-b-4 border-blue-400 inline-block">5. Empirical Formula</h2>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <div className="bg-white p-4 rounded shadow">
+                        <h3 className="font-bold text-gray-800 mb-2">Exp 1: Magnesium Oxide</h3>
+                        <p className="text-xs text-gray-500 mb-2">For Reactive Metals</p>
+                        <CrucibleSetup />
+                        <ul className="text-xs mt-2 list-disc pl-4">
+                            <li>Lift lid occasionally (allow O₂ in).</li>
+                            <li>Close quickly (prevent white fume/MgO escape).</li>
+                            <li>Repeat heating until constant mass.</li>
+                        </ul>
+                    </div>
+                    <div className="bg-white p-4 rounded shadow">
+                        <h3 className="font-bold text-gray-800 mb-2">Exp 2: Copper Oxide</h3>
+                        <p className="text-xs text-gray-500 mb-2">For Less Reactive Metals (Reduction)</p>
+                        <CombustionSetup />
+                        <ul className="text-xs mt-2 list-disc pl-4">
+                            <li>Dry H₂ gas flows through.</li>
+                            <li>Cool in H₂ stream (prevent re-oxidation).</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h3 className="font-bold text-lg mb-4">Calculation Examples</h3>
+                
+                <CalculationCard 
+                    title="Basic Calculation" 
+                    question="1.6g of Metal M reacts with 0.72g of Oxygen. Find Empirical Formula. (M=56, O=16)" 
+                    solution={`
+                        Element | M | O
+                        Mass (g) | 1.6 | 0.72
+                        Moles (÷Ar) | 1.6/56 = 0.028 | 0.72/16 = 0.045
+                        Ratio (÷Smallest)| 0.028/0.028 = 1 | 0.045/0.028 ≈ 1.5
+                        Whole No. (x2) | 2 | 3
+                        Formula: M₂O₃
+                    `}
+                />
+
+                <CalculationCard 
+                    title="Percentage Composition" 
+                    question="Compound contains 40% Ca, 12% C, 48% O. (Ca=40, C=12, O=16)" 
+                    solution={`
+                        Element | Ca | C | O
+                        Mass (%) | 40 | 12 | 48
+                        Moles | 40/40=1 | 12/12=1 | 48/16=3
+                        Ratio | 1 | 1 | 3
+                        Formula: CaCO₃
+                    `}
+                />
+                
+                <CalculationCard 
+                    title="Molecular Formula" 
+                    question="Empirical Formula is CH₂. Relative Molecular Mass is 70. Find Molecular Formula. (C=12, H=1)" 
+                    solution="Mass of (CH₂)n = 70<br/>(12 + 2)n = 70<br/>14n = 70<br/>n = 5<br/>Molecular Formula = C₅H₁₀"
+                />
+            </div>
+        );
+
+        // --- Main App ---
+        const App = () => {
+            const [activeSection, setActiveSection] = useState('mindmap');
+
+            const renderSection = () => {
+                switch(activeSection) {
+                    case 'mindmap': return <MindMap setActive={setActiveSection} />;
+                    case 'masses': return <RelativeMasses />;
+                    case 'moles': return <TheMole />;
+                    case 'formulas': return <Formulas />;
+                    case 'stoichiometry': return <Stoichiometry />;
+                    case 'empirical': return <Empirical />;
+                    default: return <MindMap setActive={setActiveSection} />;
+                }
+            };
+
+            return (
+                <div className="min-h-screen pb-12">
+                    <NavBar active={activeSection} setActive={setActiveSection} />
+                    <main className="container mx-auto mt-4">
+                        {renderSection()}
+                    </main>
+                    <footer className="text-center text-gray-400 text-xs py-8">
+                        Chapter 3: Formula & Equations - Interactive Note
+                    </footer>
+                </div>
+            );
+        };
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
