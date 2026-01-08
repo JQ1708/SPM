@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Chapter 2: Matter and the Atomic Structure</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #f0f4f8;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .handwritten {
+            font-family: 'Patrick Hand', cursive;
+            color: #2563eb; /* Blue ink color */
+            transform: rotate(-1deg);
+            display: inline-block;
+        }
+        .note-paper {
+            background-color: #fff;
+            background-image: linear-gradient(#e5e7eb 1px, transparent 1px);
+            background-size: 100% 2rem;
+            line-height: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .marker-highlight {
+            background: linear-gradient(120deg, #fde047 0%, #fde047 100%);
+            background-repeat: no-repeat;
+            background-size: 100% 40%;
+            background-position: 0 88%;
+        }
+        .fraction {
+            display: inline-flex;
+            flex-direction: column;
+            vertical-align: middle;
+            text-align: center;
+            font-size: 0.8em;
+        }
+        .fraction-top {
+            border-bottom: 1px solid currentColor;
+            padding-bottom: 1px;
+        }
+        .fraction-bottom {
+            padding-top: 1px;
+        }
+        /* Custom scrollbar for iPad feel */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 3px;
+        }
+        .animate-pop {
+            animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes pop {
+            0% { transform: scale(0.9); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // --- SVGs ---
+        const ParticleSolid = () => (
+            <svg viewBox="0 0 100 100" className="w-full h-full">
+                <rect x="0" y="0" width="100" height="100" fill="#e0f2fe" rx="10" />
+                {[...Array(16)].map((_, i) => (
+                    <circle key={i} cx={20 + (i % 4) * 20} cy={20 + Math.floor(i / 4) * 20} r="9" fill="#0284c7" stroke="#0369a1" strokeWidth="1" />
+                ))}
+            </svg>
+        );
+
+        const ParticleLiquid = () => (
+            <svg viewBox="0 0 100 100" className="w-full h-full">
+                <rect x="0" y="0" width="100" height="100" fill="#e0f2fe" rx="10" />
+                <circle cx="30" cy="80" r="9" fill="#0284c7" stroke="#0369a1" />
+                <circle cx="50" cy="80" r="9" fill="#0284c7" stroke="#0369a1" />
+                <circle cx="70" cy="80" r="9" fill="#0284c7" stroke="#0369a1" />
+                <circle cx="40" cy="65" r="9" fill="#0284c7" stroke="#0369a1" />
+                <circle cx="60" cy="65" r="9" fill="#0284c7" stroke="#0369a1" />
+                <circle cx="25" cy="50" r="9" fill="#0284c7" stroke="#0369a1" />
+                <circle cx="55" cy="45" r="9" fill="#0284c7" stroke="#0369a1" />
+                <circle cx="75" cy="55" r="9" fill="#0284c7" stroke="#0369a1" />
+                <path d="M10,90 Q50,95 90,90" fill="none" stroke="#0ea5e9" strokeWidth="2" opacity="0.5" />
+            </svg>
+        );
+
+        const ParticleGas = () => (
+            <svg viewBox="0 0 100 100" className="w-full h-full">
+                <rect x="0" y="0" width="100" height="100" fill="#e0f2fe" rx="10" />
+                <circle cx="20" cy="20" r="9" fill="#0284c7" stroke="#0369a1" />
+                <circle cx="80" cy="30" r="9" fill="#0284c7" stroke="#0369a1" />
+                <circle cx="40" cy="80" r="9" fill="#0284c7" stroke="#0369a1" />
+                <circle cx="70" cy="70" r="9" fill="#0284c7" stroke="#0369a1" />
+                <circle cx="50" cy="50" r="9" fill="#0284c7" stroke="#0369a1" />
+                {/* Motion lines */}
+                <line x1="25" y1="20" x2="35" y2="20" stroke="black" strokeWidth="1" />
+                <line x1="85" y1="35" x2="90" y2="40" stroke="black" strokeWidth="1" />
+            </svg>
+        );
+
+        const HeatingCurveGraph = () => (
+            <svg viewBox="0 0 300 200" className="w-full h-full bg-white rounded border border-gray-300">
+                {/* Axes */}
+                <line x1="30" y1="180" x2="280" y2="180" stroke="black" strokeWidth="2" />
+                <line x1="30" y1="180" x2="30" y2="20" stroke="black" strokeWidth="2" />
+                <text x="280" y="195" fontSize="10" textAnchor="middle">Time</text>
+                <text x="15" y="20" fontSize="10" textAnchor="middle" transform="rotate(-90, 15, 20)">Temperature</text>
+                
+                {/* Curve */}
+                <polyline points="30,160 80,120 130,120 180,60 230,60 270,30" fill="none" stroke="#ef4444" strokeWidth="3" />
+                
+                {/* Labels */}
+                <text x="50" y="150" fontSize="10" fill="#374151">Solid (A-B)</text>
+                <text x="105" y="115" fontSize="10" fill="#374151">Melting (B-C)</text>
+                <text x="105" y="130" fontSize="8" fill="#2563eb" className="handwritten">Solid + Liquid</text>
+                
+                <text x="150" y="90" fontSize="10" fill="#374151">Liquid (C-D)</text>
+                <text x="205" y="55" fontSize="10" fill="#374151">Boiling (D-E)</text>
+                <text x="205" y="70" fontSize="8" fill="#2563eb" className="handwritten">Liquid + Gas</text>
+                <text x="250" y="40" fontSize="10" fill="#374151">Gas (E-F)</text>
+
+                <line x1="25" y1="120" x2="30" y2="120" stroke="black" strokeWidth="1" />
+                <text x="20" y="123" fontSize="8" textAnchor="end">m.p.</text>
+                
+                <line x1="25" y1="60" x2="30" y2="60" stroke="black" strokeWidth="1" />
+                <text x="20" y="63" fontSize="8" textAnchor="end">b.p.</text>
+            </svg>
+        );
+
+         const CoolingCurveGraph = () => (
+            <svg viewBox="0 0 300 200" className="w-full h-full bg-white rounded border border-gray-300">
+                {/* Axes */}
+                <line x1="30" y1="180" x2="280" y2="180" stroke="black" strokeWidth="2" />
+                <line x1="30" y1="180" x2="30" y2="20" stroke="black" strokeWidth="2" />
+                <text x="280" y="195" fontSize="10" textAnchor="middle">Time</text>
+                <text x="15" y="20" fontSize="10" textAnchor="middle" transform="rotate(-90, 15, 20)">Temperature</text>
+                
+                {/* Curve */}
+                <polyline points="30,30 70,80 140,80 200,160" fill="none" stroke="#3b82f6" strokeWidth="3" />
+                
+                {/* Labels */}
+                <text x="40" y="50" fontSize="10" fill="#374151">Gas (P-Q)</text>
+                <text x="105" y="75" fontSize="10" fill="#374151">Freezing (Q-R)</text>
+                <text x="105" y="90" fontSize="8" fill="#2563eb" className="handwritten">Liquid + Solid</text>
+                <text x="180" y="130" fontSize="10" fill="#374151">Solid (R-S)</text>
+
+                <line x1="25" y1="80" x2="30" y2="80" stroke="black" strokeWidth="1" />
+                <text x="20" y="83" fontSize="8" textAnchor="end">f.p.</text>
+            </svg>
+        );
+
+        const AtomModel = () => (
+            <svg viewBox="0 0 100 100" className="w-full h-32">
+                {/* Electron Shells */}
+                <circle cx="50" cy="50" r="30" fill="none" stroke="#94a3b8" strokeDasharray="4" />
+                <circle cx="50" cy="50" r="45" fill="none" stroke="#94a3b8" strokeDasharray="4" />
+                
+                {/* Nucleus */}
+                <circle cx="50" cy="50" r="10" fill="#ef4444" />
+                <text x="50" y="52" fontSize="6" textAnchor="middle" fill="white" fontWeight="bold">Nucleus</text>
+
+                {/* Electrons */}
+                <circle cx="50" cy="20" r="3" fill="#3b82f6" />
+                <circle cx="50" cy="80" r="3" fill="#3b82f6" />
+                <circle cx="20" cy="50" r="3" fill="#3b82f6" />
+            </svg>
+        );
+
+        // --- Main App Component ---
+        const App = () => {
+            const [currentSection, setCurrentSection] = useState('mindmap');
+            const [slideIndex, setSlideIndex] = useState(0);
+
+            // Navigation handler
+            const navigate = (section) => {
+                setCurrentSection(section);
+                setSlideIndex(0);
+                window.scrollTo(0,0);
+            };
+
+            const sections = {
+                mindmap: <MindMap navigate={navigate} />,
+                particles: <ParticlesSection navigate={navigate} />,
+                states: <StatesOfMatterSection navigate={navigate} />,
+                kinetic: <KineticTheorySection navigate={navigate} />,
+                atomic: <AtomicStructureSection navigate={navigate} />,
+                isotopes: <IsotopesSection navigate={navigate} />,
+                quiz: <QuizSection navigate={navigate} />
+            };
+
+            return (
+                <div className="min-h-screen pb-12">
+                    {/* Header */}
+                    <div className="bg-blue-600 text-white p-4 shadow-md sticky top-0 z-50">
+                        <div className="flex justify-between items-center max-w-4xl mx-auto">
+                            <h1 className="text-xl font-bold">Matter & Atomic Structure</h1>
+                            {currentSection !== 'mindmap' && (
+                                <button 
+                                    onClick={() => navigate('mindmap')}
+                                    className="text-sm bg-blue-700 px-3 py-1 rounded-full hover:bg-blue-800 transition"
+                                >
+                                    Home
+                                </button>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Content */}
+                    <main className="max-w-4xl mx-auto p-4 md:p-6">
+                        {sections[currentSection]}
+                    </main>
+                </div>
+            );
+        };
+
+        // --- 1. Mind Map (Home) ---
+        const MindMap = ({ navigate }) => {
+            return (
+                <div className="flex flex-col items-center">
+                    <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Learning Pathway</h2>
+                    <p className="text-gray-600 mb-8 text-center">Follow the sequence to master Chapter 2</p>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+                        <MapCard number="1" title="Particles of Matter" desc="Atoms, Molecules, Ions & Elements" onClick={() => navigate('particles')} color="bg-red-100 border-red-300 text-red-800" />
+                        <MapCard number="2" title="States of Matter" desc="Solid, Liquid, Gas & Changes" onClick={() => navigate('states')} color="bg-orange-100 border-orange-300 text-orange-800" />
+                        <MapCard number="3" title="Kinetic Theory" desc="Heating/Cooling Curves & Diffusion" onClick={() => navigate('kinetic')} color="bg-yellow-100 border-yellow-300 text-yellow-800" />
+                        <MapCard number="4" title="Atomic Structure" desc="Protons, Neutrons, Electrons" onClick={() => navigate('atomic')} color="bg-green-100 border-green-300 text-green-800" />
+                        <MapCard number="5" title="Isotopes" desc="Definition, Examples & Uses" onClick={() => navigate('isotopes')} color="bg-blue-100 border-blue-300 text-blue-800" />
+                        <MapCard number="6" title="Exam Practice" desc="Test your knowledge" onClick={() => navigate('quiz')} color="bg-purple-100 border-purple-300 text-purple-800" />
+                    </div>
+                </div>
+            );
+        };
+
+        const MapCard = ({ number, title, desc, onClick, color }) => (
+            <div onClick={onClick} className={`p-6 rounded-xl border-l-4 shadow-sm cursor-pointer hover:shadow-md transition transform hover:-translate-y-1 ${color}`}>
+                <div className="flex items-center">
+                    <div className="text-3xl font-bold mr-4 opacity-50">{number}</div>
+                    <div>
+                        <h3 className="text-xl font-bold">{title}</h3>
+                        <p className="text-sm opacity-90">{desc}</p>
+                    </div>
+                </div>
+            </div>
+        );
+
+        // --- 2. Particles Section ---
+        const ParticlesSection = () => {
+            return (
+                <div className="space-y-8 animate-pop">
+                    <SectionTitle title="1. Particles of Matter" />
+                    
+                    {/* Page 1 Content */}
+                    <div className="bg-white p-6 rounded-lg shadow note-paper">
+                        <p>There are 3 kinds of particles:</p>
+                        <ul className="list-disc pl-5 space-y-3 mt-2">
+                            <li>
+                                <strong>Atoms:</strong> Particles of an element that retain the <span className="handwritten">properties</span> of the element.
+                                <br/>Atoms are the <span className="handwritten">smallest</span> particles.
+                            </li>
+                            <li>
+                                <strong>Molecules:</strong> Particles composed of <span className="handwritten">2</span> or <span className="handwritten">more</span> atoms.
+                            </li>
+                            <li>
+                                <strong>Ions:</strong> Charged particles, either <span className="handwritten">positively</span> charged or <span className="handwritten">negatively</span> charged.
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <InfoCard title="Atoms" examples={["Sodium Atom (Na)", "Zinc Atom (Zn)", "Carbon Atom (C)", "Helium Atom (He)"]} />
+                        <InfoCard title="Molecules" examples={["Oxygen gas (O₂)", "Hydrogen gas (H₂)", "Water (H₂O)", "Carbon Dioxide (CO₂)"]} note="(with same or different atoms)" />
+                        <InfoCard title="Ions" examples={["Sodium Ion (Na⁺)", "Zinc Ion (Zn²⁺)", "Chloride Ion (Cl⁻)", "Bromide Ion (Br⁻)"]} />
+                    </div>
+
+                    <div className="bg-blue-50 p-6 rounded-lg border border-blue-200">
+                        <h3 className="font-bold text-lg mb-4 text-blue-800">Common Elements & Uses</h3>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left border-collapse">
+                                <thead>
+                                    <tr className="border-b-2 border-blue-300">
+                                        <th className="p-2">Type</th>
+                                        <th className="p-2">Examples</th>
+                                        <th className="p-2">Uses <span className="handwritten text-sm">(Memorize!)</span></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr className="border-b border-blue-100">
+                                        <td className="p-2 font-bold">Metallic</td>
+                                        <td className="p-2">Copper (Cu)</td>
+                                        <td className="p-2 handwritten">Electrical Wires</td>
+                                    </tr>
+                                    <tr className="border-b border-blue-100">
+                                        <td className="p-2"></td>
+                                        <td className="p-2">Iron (Fe)</td>
+                                        <td className="p-2 handwritten">Production of steel</td>
+                                    </tr>
+                                    <tr className="border-b border-blue-100">
+                                        <td className="p-2"></td>
+                                        <td className="p-2">Gold (Au)</td>
+                                        <td className="p-2 handwritten">Jewellery</td>
+                                    </tr>
+                                    <tr className="border-b border-blue-100">
+                                        <td className="p-2"></td>
+                                        <td className="p-2">Tin (Sn)</td>
+                                        <td className="p-2 handwritten">Coating food cans</td>
+                                    </tr>
+                                    <tr className="border-b border-blue-100">
+                                        <td className="p-2"></td>
+                                        <td className="p-2">Mercury (Hg)</td>
+                                        <td className="p-2 handwritten">Thermometer</td>
+                                    </tr>
+                                    <tr className="border-b border-blue-100">
+                                        <td className="p-2 font-bold">Non-Metallic</td>
+                                        <td className="p-2">Oxygen (O)</td>
+                                        <td className="p-2 handwritten">Respiration of living organisms</td>
+                                    </tr>
+                                    <tr className="border-b border-blue-100">
+                                        <td className="p-2"></td>
+                                        <td className="p-2">Chlorine (Cl)</td>
+                                        <td className="p-2 handwritten">Kill microorganisms in water</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div className="bg-yellow-50 p-6 rounded-lg shadow-inner">
+                        <h3 className="font-bold mb-2">Matter Definitions</h3>
+                        <p className="mb-2">Matter is any substance or material that <span className="handwritten font-bold bg-yellow-200 px-1">occupy space</span> and has <span className="handwritten font-bold bg-yellow-200 px-1">mass</span>.</p>
+                        <p>Matter can be divided into <span className="handwritten">elements</span> and <span className="handwritten">compounds</span>.</p>
+                        <ul className="list-disc pl-6 mt-2 text-sm text-gray-700">
+                            <li><strong>Element:</strong> Cannot be split into simpler substances. Made of <span className="handwritten">same</span> type of atoms.</li>
+                            <li><strong>Compound:</strong> Made of atoms of <span className="handwritten">2</span> or <span className="handwritten">more</span> elements.</li>
+                        </ul>
+                    </div>
+                </div>
+            );
+        };
+
+        const InfoCard = ({ title, examples, note }) => (
+            <div className="bg-white p-4 rounded shadow border-t-4 border-indigo-500">
+                <h4 className="font-bold text-lg">{title}</h4>
+                {note && <span className="text-xs text-gray-500 block mb-2">{note}</span>}
+                <ul className="text-sm space-y-1">
+                    {examples.map((ex, i) => <li key={i}>• {ex}</li>)}
+                </ul>
+            </div>
+        );
+
+        // --- 3. States of Matter Section ---
+        const StatesOfMatterSection = () => {
+            const [activeState, setActiveState] = useState('solid');
+
+            return (
+                <div className="space-y-8 animate-pop">
+                    <SectionTitle title="2. States of Matter" />
+
+                    <div className="bg-white p-4 rounded-lg shadow">
+                        <p className="mb-4">Matter exists in 3 states: <span className="handwritten font-bold text-blue-600">Solid, Liquid, Gas</span>.</p>
+                        
+                        {/* Interactive Toggle */}
+                        <div className="flex space-x-2 mb-4">
+                            {['solid', 'liquid', 'gas'].map(state => (
+                                <button 
+                                    key={state}
+                                    onClick={() => setActiveState(state)}
+                                    className={`flex-1 py-2 rounded capitalize font-bold ${activeState === state ? 'bg-indigo-600 text-white shadow-lg' : 'bg-gray-200 text-gray-600'}`}
+                                >
+                                    {state}
+                                </button>
+                            ))}
+                        </div>
+
+                        <div className="flex flex-col md:flex-row gap-6 items-center border p-4 rounded-xl bg-gray-50">
+                            <div className="w-32 h-32 flex-shrink-0 bg-white border rounded shadow-inner p-2">
+                                {activeState === 'solid' && <ParticleSolid />}
+                                {activeState === 'liquid' && <ParticleLiquid />}
+                                {activeState === 'gas' && <ParticleGas />}
+                            </div>
+                            <div className="flex-1 space-y-2">
+                                <h3 className="text-xl font-bold capitalize text-indigo-700">{activeState}</h3>
+                                {activeState === 'solid' && (
+                                    <ul className="text-sm space-y-1">
+                                        <li><strong>Arrangement:</strong> <span className="handwritten">Orderly, Closely packed</span></li>
+                                        <li><strong>Movement:</strong> <span className="handwritten">Vibrate at its own place</span></li>
+                                        <li><strong>Energy:</strong> Very low</li>
+                                        <li><strong>Forces:</strong> Very strong</li>
+                                        <li><strong>Shape/Volume:</strong> Fixed</li>
+                                    </ul>
+                                )}
+                                {activeState === 'liquid' && (
+                                    <ul className="text-sm space-y-1">
+                                        <li><strong>Arrangement:</strong> <span className="handwritten">Disorderly, Loosely packed</span></li>
+                                        <li><strong>Movement:</strong> <span className="handwritten">Moves freely</span></li>
+                                        <li><strong>Energy:</strong> Medium</li>
+                                        <li><strong>Forces:</strong> Medium</li>
+                                        <li><strong>Shape:</strong> Not fixed (takes container shape)</li>
+                                        <li><strong>Volume:</strong> Fixed</li>
+                                    </ul>
+                                )}
+                                {activeState === 'gas' && (
+                                    <ul className="text-sm space-y-1">
+                                        <li><strong>Arrangement:</strong> <span className="handwritten">Random, Very far apart</span></li>
+                                        <li><strong>Movement:</strong> <span className="handwritten">Moves freely and randomly</span></li>
+                                        <li><strong>Energy:</strong> Very high</li>
+                                        <li><strong>Forces:</strong> Very weak</li>
+                                        <li><strong>Shape/Volume:</strong> Not fixed</li>
+                                    </ul>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Changes of State */}
+                    <div className="bg-orange-50 p-6 rounded-lg border border-orange-200">
+                        <h3 className="font-bold text-lg mb-4 text-orange-800">Changes in State</h3>
+                        <p className="mb-4 text-sm">Change in states of matter is <span className="handwritten">reversible</span>.</p>
+                        
+                        <div className="grid grid-cols-2 gap-4 text-center text-sm">
+                            <div className="bg-white p-3 rounded shadow">
+                                <span className="block font-bold">Melting</span>
+                                Solid → Liquid
+                                <div className="text-xs text-red-500 mt-1">Heat Absorbed</div>
+                            </div>
+                            <div className="bg-white p-3 rounded shadow">
+                                <span className="block font-bold">Boiling / Evaporation</span>
+                                Liquid → Gas
+                                <div className="text-xs text-red-500 mt-1">Heat Absorbed</div>
+                            </div>
+                            <div className="bg-white p-3 rounded shadow">
+                                <span className="block font-bold">Freezing</span>
+                                Liquid → Solid
+                                <div className="text-xs text-blue-500 mt-1">Heat Released</div>
+                            </div>
+                            <div className="bg-white p-3 rounded shadow">
+                                <span className="block font-bold">Condensation</span>
+                                Gas → Liquid
+                                <div className="text-xs text-blue-500 mt-1">Heat Released</div>
+                            </div>
+                        </div>
+
+                        <div className="mt-4 bg-white p-4 rounded border-l-4 border-purple-500">
+                            <h4 className="font-bold text-purple-700">Sublimation</h4>
+                            <p className="text-sm">Solid ↔ Gas (Directly)</p>
+                            <p className="text-sm mt-2"><strong>Examples:</strong> <span className="handwritten">Ammonium chloride, Dry ice, Iodine</span></p>
+                        </div>
+                    </div>
+
+                    {/* Determination Table */}
+                    <div className="bg-white p-4 rounded shadow overflow-x-auto">
+                        <h3 className="font-bold mb-2">Determine Physical State at Room Temp (-127°C? No, likely 27°C, assume generic question logic from pdf)</h3>
+                        <p className="text-xs text-gray-500 italic mb-2">Logic: If Temp &lt; MP it's Solid. If MP &lt; Temp &lt; BP it's Liquid. If Temp &gt; BP it's Gas.</p>
+                        <table className="w-full text-sm text-left">
+                            <thead className="bg-gray-100">
+                                <tr>
+                                    <th className="p-2">Substance</th>
+                                    <th className="p-2">Melting Pt (°C)</th>
+                                    <th className="p-2">Boiling Pt (°C)</th>
+                                    <th className="p-2">State at Room Temp</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr className="border-b"><td className="p-2">A</td><td className="p-2">1300</td><td className="p-2">2800</td><td className="p-2 font-bold text-blue-600 handwritten">Solid</td></tr>
+                                <tr className="border-b"><td className="p-2">C</td><td className="p-2">-134</td><td className="p-2">-25</td><td className="p-2 font-bold text-green-600 handwritten">Gas</td></tr>
+                                <tr className="border-b"><td className="p-2">D</td><td className="p-2">0</td><td className="p-2">100</td><td className="p-2 font-bold text-orange-600 handwritten">Liquid</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- 4. Kinetic Theory (Heating/Cooling) Section ---
+        const KineticTheorySection = () => {
+            return (
+                <div className="space-y-8 animate-pop">
+                    <SectionTitle title="3. Kinetic Theory & Curves" />
+
+                    {/* Heating Curve */}
+                    <div className="bg-white p-6 rounded-lg shadow-lg">
+                        <h3 className="text-lg font-bold text-red-600 mb-2">Heating Curve of Naphthalene</h3>
+                        <div className="h-64 mb-4">
+                            <HeatingCurveGraph />
+                        </div>
+                        <div className="space-y-4 text-sm">
+                            <div className="bg-red-50 p-3 rounded border-l-4 border-red-400">
+                                <strong className="block text-red-800">Why is temperature constant during melting (B-C)?</strong>
+                                <p className="mt-1">Heat energy is <span className="handwritten font-bold">absorbed</span> to <span className="handwritten font-bold">overcome the forces of attraction</span> between particles.</p>
+                                <p className="mt-1">Average kinetic energy is <span className="handwritten">constant</span>.</p>
+                            </div>
+                            <ul className="list-disc pl-5">
+                                <li><strong>A to B:</strong> Heat energy absorbed, temperature increases, kinetic energy increases.</li>
+                                <li><strong>Melting Point:</strong> 80°C (for Naphthalene).</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    {/* Cooling Curve */}
+                    <div className="bg-white p-6 rounded-lg shadow-lg">
+                        <h3 className="text-lg font-bold text-blue-600 mb-2">Cooling Curve</h3>
+                        <div className="h-64 mb-4">
+                            <CoolingCurveGraph />
+                        </div>
+                        <div className="space-y-4 text-sm">
+                            <div className="bg-blue-50 p-3 rounded border-l-4 border-blue-400">
+                                <strong className="block text-blue-800">Why is temperature constant during freezing (Q-R)?</strong>
+                                <p className="mt-1">Heat energy is <span className="handwritten font-bold">released</span> to the surrounding.</p>
+                                <p className="mt-1">Bonds are <span className="handwritten font-bold">formed</span> between particles.</p>
+                            </div>
+                            <div className="bg-yellow-50 p-3 rounded">
+                                <strong>Supercooling Warning:</strong> Ensure even cooling by using a conical flask and stirring.
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Diffusion */}
+                    <div className="bg-green-50 p-6 rounded-lg border border-green-200">
+                        <h3 className="font-bold text-lg mb-2">Diffusion & Brownian Motion</h3>
+                        <p className="mb-4"><strong>Diffusion:</strong> Random movement of particles from high concentration to low concentration.</p>
+                        <ul className="list-disc pl-5 space-y-2 text-sm">
+                            <li>Occurs fastest in <strong>Gas</strong>, then Liquid, then Solid.</li>
+                            <li><strong>Experiment:</strong> Bromine gas (brown) spreads in air.</li>
+                            <li><strong>Brownian Movement:</strong> Random movement of particles when colliding (supports Kinetic Theory).</li>
+                        </ul>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- 5. Atomic Structure Section ---
+        const AtomicStructureSection = () => {
+            return (
+                <div className="space-y-8 animate-pop">
+                    <SectionTitle title="4. Atomic Structure" />
+
+                    <div className="flex flex-col items-center bg-white p-6 rounded-lg shadow">
+                        <div className="w-48 mb-4">
+                            <AtomModel />
+                        </div>
+                        <p className="text-center italic text-gray-600">Atoms are neutral because Number of Protons = Number of Electrons.</p>
+                    </div>
+
+                    {/* Sub-atomic Particles Table */}
+                    <div className="bg-white rounded-lg shadow overflow-hidden">
+                        <table className="w-full text-sm text-left">
+                            <thead className="bg-gray-800 text-white">
+                                <tr>
+                                    <th className="p-3">Particle</th>
+                                    <th className="p-3">Symbol</th>
+                                    <th className="p-3">Charge</th>
+                                    <th className="p-3">Relative Mass</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr className="border-b"><td className="p-3 font-bold">Proton</td><td className="p-3">p</td><td className="p-3">+1 (Positive)</td><td className="p-3">1</td></tr>
+                                <tr className="border-b"><td className="p-3 font-bold">Neutron</td><td className="p-3">n</td><td className="p-3">0 (Neutral)</td><td className="p-3">1</td></tr>
+                                <tr className="border-b"><td className="p-3 font-bold">Electron</td><td className="p-3">e⁻</td><td className="p-3">-1 (Negative)</td><td className="p-3">
+                                    <span className="fraction">
+                                        <span className="fraction-top">1</span>
+                                        <span className="fraction-bottom">1840</span>
+                                    </span>
+                                </td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {/* Definitions */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="bg-indigo-50 p-4 rounded border-l-4 border-indigo-500">
+                            <h4 className="font-bold text-indigo-800">Proton Number (Z)</h4>
+                            <p className="text-sm mt-1">Number of <span className="handwritten font-bold">protons</span> in an atom.</p>
+                        </div>
+                        <div className="bg-indigo-50 p-4 rounded border-l-4 border-indigo-500">
+                            <h4 className="font-bold text-indigo-800">Nucleon Number (A)</h4>
+                            <p className="text-sm mt-1">Total sum of <span className="handwritten font-bold">protons</span> and <span className="handwritten font-bold">neutrons</span>.</p>
+                            <p className="text-xs mt-2 font-mono bg-white p-1 inline-block rounded">A = p + n</p>
+                        </div>
+                    </div>
+
+                    {/* Standard Representation */}
+                    <div className="bg-white p-6 rounded-lg shadow text-center">
+                        <h3 className="font-bold mb-4">Standard Representation</h3>
+                        <div className="text-4xl font-serif inline-block relative p-4 border-2 border-dashed border-gray-300 rounded">
+                            <span className="absolute top-2 left-2 text-sm text-gray-500">Nucleon No. →</span>
+                            <span className="absolute bottom-2 left-2 text-sm text-gray-500">Proton No. →</span>
+                            <div className="flex items-center">
+                                <div className="flex flex-col items-end mr-2 text-2xl text-blue-600 font-bold">
+                                    <span>A</span>
+                                    <span>Z</span>
+                                </div>
+                                <span className="text-6xl font-bold">X</span>
+                            </div>
+                        </div>
+                        <div className="mt-4 text-left bg-yellow-50 p-3 rounded text-sm">
+                            <p><strong>Example: Sodium (Na)</strong></p>
+                            <p>Nucleon No = 23, Proton No = 11</p>
+                            <p>Protons = 11, Electrons = 11</p>
+                            <p>Neutrons = 23 - 11 = <span className="handwritten font-bold">12</span></p>
+                            <p>Electron Arrangement: <span className="handwritten font-bold">2.8.1</span></p>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- 6. Isotopes Section ---
+        const IsotopesSection = () => {
+            return (
+                <div className="space-y-8 animate-pop">
+                    <SectionTitle title="5. Isotopes" />
+
+                    <div className="bg-white p-6 rounded-lg shadow border-l-8 border-purple-500">
+                        <h3 className="text-xl font-bold mb-2">Definition</h3>
+                        <p>Isotopes are atoms of the <strong>same element</strong> which have:</p>
+                        <ul className="list-disc pl-6 mt-2 space-y-2">
+                            <li>The <span className="text-green-600 font-bold">SAME</span> number of protons (Proton Number).</li>
+                            <li><span className="text-red-600 font-bold">DIFFERENT</span> number of neutrons (Nucleon Number).</li>
+                        </ul>
+                        <div className="mt-4 bg-gray-100 p-2 rounded text-sm text-center italic">
+                            "Same Chemical Properties, Different Physical Properties"
+                        </div>
+                    </div>
+
+                    {/* Examples Table */}
+                    <div className="bg-white rounded shadow overflow-x-auto">
+                        <table className="w-full text-sm text-center">
+                            <thead className="bg-purple-100">
+                                <tr>
+                                    <th className="p-2">Element</th>
+                                    <th className="p-2">Isotopes</th>
+                                    <th className="p-2">Protons (p)</th>
+                                    <th className="p-2">Neutrons (n)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr className="border-b">
+                                    <td rowSpan="3" className="font-bold p-2">Carbon</td>
+                                    <td className="p-2">Carbon-12</td><td className="p-2">6</td><td className="p-2 handwritten text-blue-600">6</td>
+                                </tr>
+                                <tr className="border-b">
+                                    <td className="p-2">Carbon-13</td><td className="p-2">6</td><td className="p-2 handwritten text-blue-600">7</td>
+                                </tr>
+                                <tr className="border-b">
+                                    <td className="p-2">Carbon-14</td><td className="p-2">6</td><td className="p-2 handwritten text-blue-600">8</td>
+                                </tr>
+                                <tr className="bg-gray-50">
+                                    <td colSpan="4" className="p-2 text-xs text-left pl-4">Note: All have 6 electrons.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {/* Uses */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <UseCard isotope="Cobalt-60" field="Medicine" use="To kill cancerous cells" />
+                        <UseCard isotope="Carbon-14" field="Archeology" use="Determine age of fossils" />
+                        <UseCard isotope="Sodium-24" field="Industry" use="Detect leakage of underground pipes" />
+                        <UseCard isotope="Uranium-235" field="Energy" use="Produce nuclear energy" />
+                    </div>
+                </div>
+            );
+        };
+
+        const UseCard = ({ isotope, field, use }) => (
+            <div className="bg-white p-4 rounded shadow border border-gray-200">
+                <div className="flex justify-between items-center mb-2">
+                    <span className="font-bold text-lg text-purple-700">{isotope}</span>
+                    <span className="text-xs bg-gray-200 px-2 py-1 rounded uppercase">{field}</span>
+                </div>
+                <p className="text-sm handwritten">{use}</p>
+            </div>
+        );
+
+        // --- 7. Quiz Section ---
+        const QuizSection = () => {
+            const [answers, setAnswers] = useState({});
+            const [showResult, setShowResult] = useState({});
+
+            const checkAnswer = (id, correct) => {
+                setShowResult({ ...showResult, [id]: true });
+                setAnswers({ ...answers, [id]: correct });
+            };
+
+            return (
+                <div className="space-y-8 animate-pop">
+                    <SectionTitle title="6. Exam Practice" />
+
+                    {/* Question 1 */}
+                    <div className="bg-white p-6 rounded-lg shadow">
+                        <p className="font-bold mb-4">1. Substance X sublimes when heated. Which is likely X?</p>
+                        <div className="grid grid-cols-2 gap-2">
+                            <QuizButton text="Zinc Chloride" onClick={() => checkAnswer(1, false)} result={showResult[1] && !answers[1] ? 'wrong' : ''} />
+                            <QuizButton text="Iodine" onClick={() => checkAnswer(1, true)} result={showResult[1] && answers[1] ? 'correct' : ''} />
+                            <QuizButton text="Potassium" onClick={() => checkAnswer(1, false)} result={showResult[1] && !answers[1] ? 'wrong' : ''} />
+                            <QuizButton text="Silicon Dioxide" onClick={() => checkAnswer(1, false)} result={showResult[1] && !answers[1] ? 'wrong' : ''} />
+                        </div>
+                        {showResult[1] && (
+                            <p className={`mt-2 text-sm ${answers[1] ? 'text-green-600' : 'text-red-600'}`}>
+                                {answers[1] ? "Correct! Iodine, Ammonium Chloride, and Dry Ice sublime." : "Try again. Hint: Think of purple vapor."}
+                            </p>
+                        )}
+                    </div>
+
+                    {/* Question 2 */}
+                    <div className="bg-white p-6 rounded-lg shadow">
+                        <p className="font-bold mb-4">2. Why does temperature remain constant during freezing?</p>
+                        <div className="space-y-2">
+                            <QuizButton text="Heat is absorbed to break bonds." onClick={() => checkAnswer(2, false)} result={showResult[2] && !answers[2] ? 'wrong' : ''} />
+                            <QuizButton text="Heat energy is released; bonds are formed." onClick={() => checkAnswer(2, true)} result={showResult[2] && answers[2] ? 'correct' : ''} />
+                        </div>
+                    </div>
+
+                     {/* Question 3 - Fill in blank logic */}
+                     <div className="bg-white p-6 rounded-lg shadow">
+                        <p className="font-bold mb-2">3. Determine the number of neutrons in Chlorine-37.</p>
+                        <p className="text-sm text-gray-600 mb-4">Proton Number of Cl = 17.</p>
+                        <div className="flex items-center space-x-2">
+                            <span>n = </span>
+                            <input type="number" id="q3" className="border p-1 w-16 rounded" />
+                            <button onClick={() => {
+                                const val = document.getElementById('q3').value;
+                                checkAnswer(3, val == 20);
+                            }} className="bg-blue-500 text-white px-3 py-1 rounded text-sm">Check</button>
+                        </div>
+                         {showResult[3] && (
+                            <p className={`mt-2 text-sm ${answers[3] ? 'text-green-600' : 'text-red-600'}`}>
+                                {answers[3] ? "Correct! 37 - 17 = 20." : "Incorrect. Remember: Nucleon No - Proton No."}
+                            </p>
+                        )}
+                    </div>
+
+                    <div className="bg-yellow-100 p-4 rounded text-center">
+                        <p className="font-bold text-yellow-800">End of Chapter 2</p>
+                        <p className="text-sm">Review the Mind Map to ensure you missed nothing!</p>
+                    </div>
+                </div>
+            );
+        };
+
+        const QuizButton = ({ text, onClick, result }) => {
+            let bg = "bg-gray-100 hover:bg-gray-200";
+            if (result === 'correct') bg = "bg-green-200 border-green-500";
+            if (result === 'wrong') bg = "bg-red-100 border-red-500 opacity-50";
+
+            return (
+                <button onClick={onClick} className={`w-full p-3 rounded text-left border ${bg} transition`}>
+                    {text}
+                </button>
+            );
+        };
+
+        const SectionTitle = ({ title }) => (
+            <h2 className="text-2xl font-bold text-gray-800 border-b-4 border-blue-500 pb-2 inline-block mb-4">{title}</h2>
+        );
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
