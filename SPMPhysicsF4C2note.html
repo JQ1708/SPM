@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Force and Motion I - SPM Physics</title>
+    
+    <!-- 1. Load Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- 2. Configure Import Map for React & Icons -->
+    <script type="importmap">
+    {
+      "imports": {
+        "react": "https://esm.sh/react@18.2.0",
+        "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+        "lucide-react": "https://esm.sh/lucide-react@0.263.1"
+      }
+    }
+    </script>
+
+    <!-- 3. Load Babel to translate React code in the browser -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Custom Styles -->
+    <style>
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-slideIn {
+            animation: slideIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        .animate-shake {
+            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+        }
+        body {
+            overscroll-behavior: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 h-screen w-screen overflow-hidden text-gray-800">
+
+    <!-- The Root Element where React will render -->
+    <div id="root" class="h-full w-full"></div>
+
+    <!-- The React Application Code -->
+    <script type="text/babel" data-type="module">
+        import React, { useState, useEffect } from 'react';
+        import ReactDOM from 'react-dom/client';
+        import { 
+            BookOpen, 
+            AlertTriangle, 
+            Lightbulb, 
+            Zap, 
+            Target, 
+            ChevronRight, 
+            ChevronLeft, 
+            Home, 
+            Activity, 
+            ArrowRight,
+            HelpCircle,
+            PlayCircle,
+            RotateCcw,
+            Maximize2,
+            Check,
+            X
+        } from 'lucide-react';
+
+        // --- Custom Math Components for Specific Formatting ---
+
+        const MathText = ({ children, className = "" }) => (
+            <span className={`font-serif italic ${className}`}>{children}</span>
+        );
+
+        const MathFraction = ({ num, den }) => (
+            <div className="inline-flex flex-col items-center align-middle mx-1">
+                <span className="border-b border-black w-full text-center px-1 pb-0.5">{num}</span>
+                <span className="w-full text-center px-1 pt-0.5">{den}</span>
+            </div>
+        );
+
+        const MathMult = () => <span className="mx-1">&times;</span>;
+
+        const MathPower = ({ base, exp }) => (
+            <span>
+                {base}<sup className="text-xs">{exp}</sup>
+            </span>
+        );
+
+        const MathRoot = ({ children }) => (
+            <span className="inline-flex items-center mx-1">
+                <span className="text-xl leading-none" style={{ transform: 'translateY(2px)' }}>&radic;</span>
+                <span className="border-t border-black pt-1 px-1 ml-[-2px]">{children}</span>
+            </span>
+        );
+
+        // --- Content Data Structure ---
+
+        const TOPICS = [
+            {
+                id: 'intro',
+                title: '2.1 Linear Motion',
+                icon: <Activity size={32} />,
+                content: [
+                {
+                    type: 'definition',
+                    text: 'Linear motion is motion in a straight line.'
+                },
+                {
+                    type: 'comparison',
+                    title: 'Scalar vs Vector Quantities',
+                    items: [
+                    { label: 'Scalar Quantity', desc: 'Has magnitude only.', examples: 'Distance, Speed, Time, Mass' },
+                    { label: 'Vector Quantity', desc: 'Has both magnitude and direction.', examples: 'Displacement, Velocity, Acceleration, Force' }
+                    ]
+                },
+                {
+                    type: 'concept',
+                    title: 'Distance (s) vs Displacement (s)',
+                    points: [
+                    { term: 'Distance', def: 'Total path length travelled by an object.', type: 'Scalar' },
+                    { term: 'Displacement', def: 'Shortest distance between start and end points in a specific direction.', type: 'Vector' }
+                    ]
+                },
+                {
+                    type: 'concept',
+                    title: 'Speed (v) vs Velocity (v)',
+                    points: [
+                    { term: 'Speed', def: 'Rate of change of distance.', formula: <><MathText>v</MathText> = <MathFraction num={<MathText>d</MathText>} den={<MathText>t</MathText>} /></>, type: 'Scalar' },
+                    { term: 'Velocity', def: 'Rate of change of displacement.', formula: <><MathText>v</MathText> = <MathFraction num={<MathText>s</MathText>} den={<MathText>t</MathText>} /></>, type: 'Vector' }
+                    ]
+                },
+                {
+                    type: 'concept',
+                    title: 'Acceleration (a)',
+                    points: [
+                    { term: 'Acceleration', def: 'Rate of change of velocity.', formula: <><MathText>a</MathText> = <MathFraction num={<><MathText>v</MathText> - <MathText>u</MathText></>} den={<MathText>t</MathText>} /></>, type: 'Vector' },
+                    { term: 'Deceleration', def: 'Negative acceleration (velocity decreases).', note: 'If a = -2 ms⁻², deceleration = 2 ms⁻²' }
+                    ]
+                },
+                {
+                    type: 'extra_info',
+                    text: 'A car moving at constant velocity has ZERO acceleration because there is no change in velocity.'
+                },
+                {
+                    type: 'careless_mistake',
+                    text: 'Do not confuse negative acceleration with moving backwards. Negative acceleration usually means slowing down while moving forward.'
+                }
+                ]
+            },
+            {
+                id: 'charts',
+                title: '2.2 Ticker Timer & Charts',
+                icon: <Zap size={32} />,
+                content: [
+                {
+                    type: 'definition',
+                    text: 'A device used to study linear motion in the laboratory. It runs on 12V a.c. power supply.'
+                },
+                {
+                    type: 'popular_q',
+                    text: 'Why use a.c. power supply? To make the vibrating strip vibrate 50 times per second (50 Hz).'
+                },
+                {
+                    type: 'concept',
+                    title: 'Time Calculation',
+                    points: [
+                    { term: '1 Tick', def: 'Time interval between two adjacent dots.' },
+                    { term: 'Frequency', def: '50 Hz' },
+                    { term: 'Time for 1 tick', formula: <><MathText>t</MathText> = <MathFraction num="1" den="50" /> = 0.02 s</> }
+                    ]
+                },
+                {
+                    type: 'diagram_svg',
+                    title: 'Ticker Tape Patterns',
+                    draw: 'tape_patterns'
+                },
+                {
+                    type: 'example',
+                    title: 'Calculating Acceleration from Tape',
+                    content: 'Calculate the acceleration if u = 20 cm s⁻¹, v = 100 cm s⁻¹ and the time interval is 5 ticks.',
+                    solution: <>Time = 5 <MathMult/> 0.02 = 0.1 s. <br/> <MathText>a</MathText> = <MathFraction num="100 - 20" den="0.1" /> = 800 cm s<MathPower base="-" exp="2"/></>
+                }
+                ]
+            },
+            {
+                id: 'equations',
+                title: '2.3 Equations of Motion',
+                icon: <Target size={32} />,
+                content: [
+                {
+                    type: 'text',
+                    text: 'For motion with UNIFORM ACCELERATION only.'
+                },
+                {
+                    type: 'formula_card',
+                    title: 'The 4 Key Equations',
+                    formulas: [
+                    <><MathText>v</MathText> = <MathText>u</MathText> + <MathText>at</MathText></>,
+                    <><MathText>s</MathText> = <MathFraction num={<><MathText>u</MathText> + <MathText>v</MathText></>} den="2" /> <MathMult/> <MathText>t</MathText></>,
+                    <><MathText>s</MathText> = <MathText>ut</MathText> + <MathFraction num="1" den="2" /><MathText>at</MathText><MathPower base="" exp="2" /></>,
+                    <><MathText>v</MathText><MathPower base="" exp="2" /> = <MathText>u</MathText><MathPower base="" exp="2" /> + 2<MathText>as</MathText></>
+                    ],
+                    legend: {
+                    s: 'Displacement',
+                    u: 'Initial Velocity',
+                    v: 'Final Velocity',
+                    a: 'Acceleration',
+                    t: 'Time'
+                    }
+                },
+                {
+                    type: 'careless_mistake',
+                    text: 'Ensure all units are consistent (usually SI units) before substituting into equations.'
+                }
+                ]
+            },
+            {
+                id: 'graphs',
+                title: '2.4 Linear Motion Graphs',
+                icon: <Activity size={32} />,
+                content: [
+                {
+                    type: 'section_header',
+                    text: 'Displacement-Time (s-t) Graph'
+                },
+                {
+                    type: 'diagram_svg',
+                    title: 's-t Graph Analysis',
+                    draw: 'st_graph'
+                },
+                {
+                    type: 'key_point',
+                    text: 'Gradient of s-t graph = VELOCITY'
+                },
+                {
+                    type: 'section_header',
+                    text: 'Velocity-Time (v-t) Graph'
+                },
+                {
+                    type: 'diagram_svg',
+                    title: 'v-t Graph Analysis',
+                    draw: 'vt_graph'
+                },
+                {
+                    type: 'key_point',
+                    text: 'Gradient of v-t graph = ACCELERATION'
+                },
+                {
+                    type: 'key_point',
+                    text: 'Area under v-t graph = DISPLACEMENT'
+                },
+                {
+                    type: 'example',
+                    title: 'Finding Displacement',
+                    content: 'A car moves at 20 m/s for 10s. Find displacement using the graph.',
+                    solution: <>Area = Rectangle Area = 20 <MathMult/> 10 = 200 m</>
+                }
+                ]
+            },
+            {
+                id: 'inertia',
+                title: '2.5 Inertia & Mass',
+                icon: <BookOpen size={32} />,
+                content: [
+                {
+                    type: 'definition',
+                    title: "Newton's First Law of Motion",
+                    text: 'An object will remain at rest or continue to move with uniform velocity in a straight line unless acted upon by an external force.'
+                },
+                {
+                    type: 'concept',
+                    title: 'Inertia',
+                    text: 'The tendency of an object to resist any change in its state of rest or motion.'
+                },
+                {
+                    type: 'diagram_svg',
+                    title: 'Mass vs Inertia Relationship',
+                    draw: 'inertia_scale'
+                },
+                {
+                    type: 'key_point',
+                    text: 'The larger the mass, the larger the inertia.'
+                },
+                {
+                    type: 'popular_q',
+                    text: 'Situation: Why do passengers lurch forward when a bus stops suddenly?',
+                    answer: 'Due to INERTIA. Passengers were in motion with the bus. When the bus stops, their bodies tend to continue moving forward to oppose the change.'
+                }
+                ]
+            },
+            {
+                id: 'momentum',
+                title: '2.6 Momentum',
+                icon: <PlayCircle size={32} />,
+                content: [
+                {
+                    type: 'definition',
+                    title: 'Momentum (p)',
+                    text: 'The product of mass and velocity.',
+                    formula: <><MathText>p</MathText> = <MathText>mv</MathText></>
+                },
+                {
+                    type: 'definition',
+                    title: 'Principle of Conservation of Momentum',
+                    text: 'Total momentum before collision = Total momentum after collision, provided no external force acts on the system.'
+                },
+                {
+                    type: 'formula_card',
+                    title: 'Collision Formulas',
+                    formulas: [
+                    <>Elastic/Inelastic: <MathText>m</MathText><sub className="text-xs">1</sub><MathText>u</MathText><sub className="text-xs">1</sub> + <MathText>m</MathText><sub className="text-xs">2</sub><MathText>u</MathText><sub className="text-xs">2</sub> = <MathText>m</MathText><sub className="text-xs">1</sub><MathText>v</MathText><sub className="text-xs">1</sub> + <MathText>m</MathText><sub className="text-xs">2</sub><MathText>v</MathText><sub className="text-xs">2</sub></>,
+                    <>Explosion: <MathText>m</MathText><sub className="text-xs">1</sub><MathText>v</MathText><sub className="text-xs">1</sub> = -<MathText>m</MathText><sub className="text-xs">2</sub><MathText>v</MathText><sub className="text-xs">2</sub></>
+                    ]
+                },
+                {
+                    type: 'comparison',
+                    title: 'Elastic vs Inelastic Collision',
+                    items: [
+                    { label: 'Elastic', desc: 'Kinetic energy is conserved. Objects separate after collision.' },
+                    { label: 'Inelastic', desc: 'Kinetic energy is NOT conserved. Objects may stick together.' }
+                    ]
+                }
+                ]
+            },
+            {
+                id: 'force',
+                title: '2.7 Force',
+                icon: <Zap size={32} />,
+                content: [
+                {
+                    type: 'definition',
+                    title: "Newton's Second Law of Motion",
+                    text: 'The rate of change of momentum is directly proportional to the force and acts in the direction of the applied force.'
+                },
+                {
+                    type: 'formula_card',
+                    title: 'The Force Formula',
+                    formulas: [
+                    <><MathText>F</MathText> = <MathText>ma</MathText></>
+                    ],
+                    legend: {
+                    F: 'Net Force (N)',
+                    m: 'Mass (kg)',
+                    a: 'Acceleration (ms⁻²)'
+                    }
+                },
+                {
+                    type: 'extra_info',
+                    text: 'If forces are balanced (Net Force = 0), the object is either stationary or moving with uniform velocity.'
+                }
+                ]
+            },
+            {
+                id: 'impulse',
+                title: '2.8 Impulse & Impulsive Force',
+                icon: <AlertTriangle size={32} />,
+                content: [
+                {
+                    type: 'concept',
+                    title: 'Impulse',
+                    text: 'Change in momentum.',
+                    formula: <>Impulse = <MathText>Ft</MathText> = <MathText>mv</MathText> - <MathText>mu</MathText></>
+                },
+                {
+                    type: 'concept',
+                    title: 'Impulsive Force',
+                    text: 'Rate of change of momentum during a collision/impact.',
+                    formula: <><MathText>F</MathText> = <MathFraction num={<><MathText>mv</MathText> - <MathText>mu</MathText></>} den={<MathText>t</MathText>} /></>
+                },
+                {
+                    type: 'key_point',
+                    text: 'Relationship between Force (F) and Impact Time (t): F is inversely proportional to t.'
+                },
+                {
+                    type: 'example',
+                    title: 'Safety Applications',
+                    content: 'Why bend knees when landing?',
+                    solution: 'To increase the time of impact (t). When t increases, impulsive force (F) decreases. This prevents injury.'
+                },
+                {
+                    type: 'diagram_svg',
+                    title: 'Egg Drop Experiment',
+                    draw: 'egg_drop'
+                }
+                ]
+            },
+            {
+                id: 'gravity',
+                title: '2.9 Gravity & Free Fall',
+                icon: <Target size={32} />,
+                content: [
+                {
+                    type: 'definition',
+                    text: 'All objects fall towards Earth due to gravitational pull.'
+                },
+                {
+                    type: 'concept',
+                    title: 'Gravitational Field Strength (g)',
+                    text: 'Force acting per unit mass.',
+                    formula: <><MathText>g</MathText> = 9.81 N kg<MathPower base="-" exp="1" /> or m s<MathPower base="-" exp="2" /></>
+                },
+                {
+                    type: 'definition',
+                    title: 'Free Fall',
+                    text: 'Motion of an object falling under the influence of gravity ONLY (no air resistance).'
+                },
+                {
+                    type: 'careless_mistake',
+                    text: 'In vacuum, a feather and a coin fall at the SAME rate because gravity acts equally regardless of mass in the absence of air resistance.'
+                },
+                {
+                    type: 'concept',
+                    title: 'Weight (W)',
+                    formula: <><MathText>W</MathText> = <MathText>mg</MathText></>
+                }
+                ]
+            }
+        ];
+
+        // --- SVG Diagram Components ---
+
+        const TapeDiagram = () => (
+            <div className="w-full bg-white rounded-lg shadow-inner flex flex-col justify-center items-center p-6 my-4 overflow-hidden h-auto py-8">
+                <div className="text-sm text-gray-500 mb-4 font-bold self-start uppercase tracking-wide">Uniform Velocity</div>
+                <div className="flex items-center w-full mb-8">
+                {[...Array(8)].map((_, i) => (
+                    <div key={i} className="flex-1 border-b-2 border-dashed border-gray-300 relative h-2">
+                    <div className="absolute right-0 top-[-5px] w-3 h-3 bg-indigo-600 rounded-full shadow-sm"></div>
+                    </div>
+                ))}
+                </div>
+                <div className="text-sm text-gray-500 mb-4 font-bold self-start uppercase tracking-wide">Acceleration</div>
+                <div className="flex items-center w-full">
+                {[10, 20, 40, 70, 100, 140].map((width, i) => (
+                    <div key={i} style={{ width: `${width}px` }} className="border-b-2 border-dashed border-gray-300 relative h-2 shrink-0">
+                    <div className="absolute right-0 top-[-5px] w-3 h-3 bg-rose-600 rounded-full shadow-sm"></div>
+                    </div>
+                ))}
+                </div>
+            </div>
+        );
+
+        const STGraph = () => (
+            <svg viewBox="0 0 200 120" className="w-full h-auto max-h-64 bg-white rounded-lg p-4 my-2" preserveAspectRatio="xMidYMid meet">
+                <line x1="20" y1="100" x2="180" y2="100" stroke="black" strokeWidth="2" />
+                <line x1="20" y1="100" x2="20" y2="10" stroke="black" strokeWidth="2" />
+                <text x="180" y="115" fontSize="10">t(s)</text>
+                <text x="5" y="15" fontSize="10">s(m)</text>
+                <path d="M20,100 L80,40 L120,40 L180,10" fill="none" stroke="#4f46e5" strokeWidth="2" />
+                <text x="30" y="70" fontSize="8" fill="#4f46e5">Uniform Vel</text>
+                <text x="85" y="35" fontSize="8" fill="#4f46e5">Rest</text>
+                <text x="140" y="20" fontSize="8" fill="#4f46e5">Return</text>
+            </svg>
+        );
+
+        const VTGraph = () => (
+            <svg viewBox="0 0 200 120" className="w-full h-auto max-h-64 bg-white rounded-lg p-4 my-2" preserveAspectRatio="xMidYMid meet">
+                <line x1="20" y1="100" x2="180" y2="100" stroke="black" strokeWidth="2" />
+                <line x1="20" y1="100" x2="20" y2="10" stroke="black" strokeWidth="2" />
+                <text x="180" y="115" fontSize="10">t(s)</text>
+                <text x="5" y="15" fontSize="10">v(m/s)</text>
+                <path d="M20,100 L60,20 L120,20 L180,100" fill="none" stroke="#e11d48" strokeWidth="2" />
+                <text x="25" y="60" fontSize="8" fill="#e11d48">Uniform Accel</text>
+                <text x="70" y="15" fontSize="8" fill="#e11d48">Constant Vel</text>
+                <text x="140" y="60" fontSize="8" fill="#e11d48">Deceleration</text>
+            </svg>
+        );
+
+        const InertiaDiagram = () => (
+            <svg viewBox="0 0 200 100" className="w-full h-auto max-h-64 bg-white rounded-lg p-4 my-2" preserveAspectRatio="xMidYMid meet">
+                {/* Small Mass */}
+                <circle cx="50" cy="70" r="10" fill="#fbbf24" stroke="black" />
+                <text x="35" y="90" fontSize="10">Small Mass</text>
+                <text x="30" y="50" fontSize="10">Easy to move</text>
+                
+                {/* Large Mass */}
+                <circle cx="150" cy="70" r="25" fill="#ef4444" stroke="black" />
+                <text x="125" y="98" fontSize="10">Large Mass</text>
+                <text x="120" y="35" fontSize="10">Hard to move</text>
+            </svg>
+        );
+
+        const EggDiagram = () => (
+            <div className="w-full bg-white rounded-lg p-6 flex justify-around items-end h-64 my-2">
+                <div className="flex flex-col items-center">
+                    <div className="mb-4 text-sm text-center font-bold text-red-600 uppercase tracking-wide">High Force<br/>Short Time</div>
+                    <div className="w-24 h-4 bg-gray-400 rounded"></div> {/* Concrete */}
+                    <div className="text-sm mt-2 font-bold text-gray-500">Concrete Floor</div>
+                </div>
+                <div className="flex flex-col items-center">
+                    <div className="mb-4 text-sm text-center font-bold text-green-600 uppercase tracking-wide">Low Force<br/>Long Time</div>
+                    <div className="w-24 h-12 bg-yellow-200 border-t-8 border-yellow-400 rounded"></div> {/* Sponge */}
+                    <div className="text-sm mt-2 font-bold text-gray-500">Thick Sponge</div>
+                </div>
+            </div>
+        );
+
+        // --- Main Components ---
+
+        const IntroScreen = ({ onStart }) => (
+            <div className="h-full w-full overflow-y-auto bg-gradient-to-br from-indigo-900 via-indigo-800 to-purple-900 text-white">
+                <div className="min-h-full flex flex-col items-center justify-center p-10 text-center w-full">
+                    <div className="animate-bounce mb-8 mt-10">
+                    <BookOpen size={100} className="text-yellow-400 drop-shadow-2xl" />
+                    </div>
+                    <h1 className="text-7xl font-extrabold mb-6 tracking-tight drop-shadow-lg">Force and Motion I</h1>
+                    <p className="text-3xl text-indigo-200 mb-12 max-w-3xl font-light">SPM Physics • Chapter 2</p>
+                    
+                    <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-10 mb-12 max-w-2xl shadow-2xl border border-white/20">
+                    <h3 className="font-bold text-2xl mb-4 text-yellow-300 uppercase tracking-widest">Mission Objective</h3>
+                    <p className="text-xl leading-relaxed text-gray-100">Master the laws of motion, conquer graphs, and understand why heavy things are hard to push.</p>
+                    </div>
+
+                    <button 
+                    onClick={onStart}
+                    className="group relative inline-flex items-center justify-center px-12 py-6 text-2xl font-bold text-white transition-all duration-300 bg-indigo-600 font-pj rounded-full focus:outline-none focus:ring-4 focus:ring-offset-4 focus:ring-indigo-600 hover:bg-indigo-500 hover:scale-110 active:scale-95 shadow-2xl mb-20 cursor-pointer"
+                    >
+                    Start Learning
+                    <ArrowRight className="ml-3 group-hover:translate-x-2 transition-transform" />
+                    </button>
+                </div>
+            </div>
+        );
+
+        const MindMap = ({ onSelectTopic, currentTopicId }) => (
+            <div className="w-full bg-slate-100 p-8 shadow-inner border-b border-gray-200">
+                <h2 className="text-center font-bold text-gray-500 mb-6 text-sm sticky left-0 uppercase tracking-[0.2em]">Chapter Roadmap</h2>
+                <div className="flex space-x-8 overflow-x-auto pb-4 px-4 justify-start md:justify-center min-w-full">
+                {TOPICS.map((topic, index) => (
+                    <button
+                    key={topic.id}
+                    onClick={() => onSelectTopic(index)}
+                    className={`flex-shrink-0 flex flex-col items-center justify-center p-4 rounded-2xl transition-all duration-300 w-44 h-44 shadow-sm border-2
+                        ${currentTopicId === index 
+                        ? 'bg-indigo-600 text-white scale-110 ring-4 ring-indigo-200 border-transparent z-10 shadow-xl' 
+                        : 'bg-white text-gray-500 hover:bg-indigo-50 border-white hover:border-indigo-200'}`}
+                    >
+                    <div className="mb-4 p-3 bg-white/20 rounded-full">{topic.icon}</div>
+                    <div className="text-sm font-bold text-center leading-tight px-2">{topic.title}</div>
+                    <div className="mt-3 text-[10px] opacity-60 font-mono tracking-wider">STEP {index + 1}</div>
+                    </button>
+                ))}
+                </div>
+            </div>
+        );
+
+        const ContentBlock = ({ data }) => {
+            const [revealed, setRevealed] = useState(false);
+
+            useEffect(() => {
+                setRevealed(false);
+            }, [data]);
+
+            const baseStyle = "mb-10 p-8 rounded-[2rem] shadow-sm border-l-[12px] transition-all duration-500 hover:shadow-xl bg-white";
+
+            switch (data.type) {
+                case 'definition':
+                return (
+                    <div className={`${baseStyle} bg-blue-50/50 border-blue-500`}>
+                    <h3 className="text-blue-800 font-bold text-3xl mb-4 flex items-center">
+                        <BookOpen size={32} className="mr-4 text-blue-600" />
+                        {data.title || 'Definition'}
+                    </h3>
+                    <p className="text-gray-800 text-2xl leading-relaxed font-serif">{data.text}</p>
+                    {data.formula && <div className="mt-6 p-6 bg-white rounded-2xl text-center font-mono text-3xl border-2 border-blue-100 shadow-inner text-gray-700">{data.formula}</div>}
+                    </div>
+                );
+
+                case 'concept':
+                return (
+                    <div className={`${baseStyle} border-indigo-500`}>
+                    <h3 className="text-indigo-900 font-bold text-3xl mb-6">{data.title}</h3>
+                    {data.text && <p className="mb-6 text-gray-700 text-xl leading-relaxed">{data.text}</p>}
+                    {data.points && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {data.points.map((p, i) => (
+                            <div key={i} className="bg-gray-50 p-6 rounded-2xl border border-gray-100 hover:border-indigo-200 transition-colors">
+                            <span className="font-bold text-indigo-700 text-xl block mb-2">{p.term}</span>
+                            <span className="text-gray-600 block mb-3 text-lg leading-snug">{p.def}</span>
+                            {p.formula && <div className="text-center font-mono bg-white p-3 rounded-lg border border-gray-200 my-3 text-lg text-gray-800">{p.formula}</div>}
+                            {p.type && <span className="inline-block px-3 py-1 bg-indigo-100 text-xs font-bold uppercase tracking-wide rounded-full text-indigo-700 mt-2">{p.type}</span>}
+                            {p.note && <div className="text-sm text-orange-600 mt-3 italic flex items-start bg-orange-50 p-2 rounded"><AlertTriangle size={16} className="mr-2 mt-0.5 shrink-0"/> Note: {p.note}</div>}
+                            </div>
+                        ))}
+                        </div>
+                    )}
+                    {data.formula && <div className="mt-6 text-center text-3xl font-bold text-gray-800 bg-gray-50 p-6 rounded-2xl border border-gray-200">{data.formula}</div>}
+                    </div>
+                );
+
+                case 'comparison':
+                return (
+                    <div className={`${baseStyle} border-purple-500`}>
+                    <h3 className="text-purple-900 font-bold text-3xl mb-6 text-center">{data.title}</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        {data.items.map((item, i) => (
+                        <div key={i} className="bg-purple-50/50 p-8 rounded-3xl flex flex-col h-full border border-purple-100 hover:bg-purple-50 transition-colors">
+                            <div className="font-bold text-purple-800 text-2xl border-b-2 border-purple-200 pb-3 mb-4">{item.label}</div>
+                            <div className="text-gray-700 text-xl flex-grow mb-4 leading-relaxed">{item.desc}</div>
+                            {item.examples && <div className="text-base text-purple-700 italic bg-purple-100/60 p-4 rounded-xl">Ex: {item.examples}</div>}
+                        </div>
+                        ))}
+                    </div>
+                    </div>
+                );
+
+                case 'popular_q':
+                return (
+                    <div className={`${baseStyle} bg-rose-50/30 border-rose-500`}>
+                    <div className="flex flex-col md:flex-row items-start md:items-center">
+                        <div className="bg-rose-100 p-4 rounded-full mr-6 text-rose-600 shrink-0 mb-4 md:mb-0">
+                        <HelpCircle size={40} />
+                        </div>
+                        <div className="w-full">
+                        <h4 className="font-bold text-rose-800 text-lg mb-2 uppercase tracking-wide">Popular Question</h4>
+                        <p className="text-gray-900 font-medium text-2xl leading-relaxed mb-4">{data.text}</p>
+                        {data.answer && (
+                            <div>
+                            <button 
+                                onClick={() => setRevealed(!revealed)}
+                                className="text-base font-bold bg-rose-200 hover:bg-rose-300 text-rose-900 px-6 py-3 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-rose-400 shadow-sm"
+                            >
+                                {revealed ? 'Hide Answer' : 'Reveal Answer'}
+                            </button>
+                            {revealed && (
+                                <div className="mt-4 text-xl text-rose-900 bg-white p-6 rounded-2xl animate-fadeIn border border-rose-100 shadow-inner">
+                                {data.answer}
+                                </div>
+                            )}
+                            </div>
+                        )}
+                        </div>
+                    </div>
+                    </div>
+                );
+
+                case 'extra_info':
+                return (
+                    <div className={`${baseStyle} bg-amber-50/50 border-amber-500`}>
+                    <div className="flex items-center mb-4 text-amber-700 font-bold text-xl">
+                        <Lightbulb size={32} className="mr-3" /> Extra Info
+                    </div>
+                    <p className="text-amber-900 italic text-xl leading-relaxed border-l-4 border-amber-300 pl-4">{data.text}</p>
+                    </div>
+                );
+
+                case 'careless_mistake':
+                return (
+                    <div className={`${baseStyle} bg-red-50/50 border-red-600`}>
+                    <div className="flex items-center mb-4 text-red-700 font-bold text-xl">
+                        <AlertTriangle size={32} className="mr-3" /> Careless Mistake
+                    </div>
+                    <p className="text-red-900 font-medium text-xl leading-relaxed border-l-4 border-red-300 pl-4">{data.text}</p>
+                    </div>
+                );
+
+                case 'example':
+                return (
+                    <div className={`${baseStyle} bg-emerald-50/30 border-emerald-500`}>
+                    <div className="flex items-center mb-6 text-emerald-800 font-bold text-xl uppercase tracking-wide">
+                        <Target size={32} className="mr-3" /> Example Scenario
+                    </div>
+                    {data.title && <div className="font-bold text-emerald-900 text-2xl mb-4">{data.title}</div>}
+                    <div className="bg-white p-8 rounded-2xl border border-emerald-100 mb-6 shadow-sm text-xl text-gray-800 leading-relaxed">
+                        {data.content}
+                    </div>
+                    <button 
+                        onClick={() => setRevealed(!revealed)}
+                        className="w-full py-4 bg-emerald-200 hover:bg-emerald-300 text-emerald-900 rounded-2xl font-bold text-lg transition-colors shadow-sm"
+                    >
+                        {revealed ? 'Hide Solution' : 'Check Solution'}
+                    </button>
+                    {revealed && (
+                        <div className="mt-6 p-8 bg-emerald-100/50 rounded-2xl text-emerald-900 font-mono text-lg animate-fadeIn border border-emerald-200">
+                        <strong className="block mb-4 text-emerald-800 text-xl sans-serif">Solution:</strong>
+                        {data.solution}
+                        </div>
+                    )}
+                    </div>
+                );
+
+                case 'formula_card':
+                return (
+                    <div className="bg-slate-800 text-white p-10 rounded-[2.5rem] shadow-2xl mb-12 relative overflow-hidden group hover:scale-[1.01] transition-transform duration-300 mx-auto w-full">
+                    <div className="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-indigo-500 opacity-20 rounded-full blur-3xl group-hover:opacity-30 transition-opacity"></div>
+                    <h3 className="text-yellow-400 font-bold text-3xl mb-8 border-b border-gray-600 pb-4 relative z-10">{data.title}</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
+                        {data.formulas.map((f, i) => (
+                        <div key={i} className="text-3xl font-mono text-center tracking-wider text-white bg-slate-700/50 p-6 rounded-2xl border border-slate-600">{f}</div>
+                        ))}
+                    </div>
+                    {data.legend && (
+                        <div className="mt-10 pt-8 border-t border-gray-600 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 text-base text-gray-300 relative z-10">
+                        {Object.entries(data.legend).map(([key, val]) => (
+                            <div key={key} className="flex flex-col"><span className="font-bold text-yellow-300 text-xl mb-1">{key}</span> <span>{val}</span></div>
+                        ))}
+                        </div>
+                    )}
+                    </div>
+                );
+
+                case 'diagram_svg':
+                return (
+                    <div className="mb-12">
+                    <div className="text-sm font-bold text-gray-400 mb-4 text-center uppercase tracking-[0.2em]">{data.title}</div>
+                    <div className="border-2 border-dashed border-gray-200 rounded-[2rem] p-8 bg-white flex justify-center items-center shadow-sm min-h-[250px] hover:border-indigo-200 transition-colors">
+                        {data.draw === 'tape_patterns' && <TapeDiagram />}
+                        {data.draw === 'st_graph' && <STGraph />}
+                        {data.draw === 'vt_graph' && <VTGraph />}
+                        {data.draw === 'inertia_scale' && <InertiaDiagram />}
+                        {data.draw === 'egg_drop' && <EggDiagram />}
+                        {!['tape_patterns', 'st_graph', 'vt_graph', 'inertia_scale', 'egg_drop'].includes(data.draw) && (
+                        <div className="h-40 flex items-center justify-center text-gray-400 italic text-2xl">Space for {data.title}</div>
+                        )}
+                    </div>
+                    </div>
+                );
+                
+                case 'key_point':
+                return (
+                    <div className="mb-12 text-center px-4">
+                    <span className="inline-block px-8 py-4 bg-indigo-50 text-indigo-900 rounded-full font-bold text-lg border border-indigo-100 shadow-md">
+                        KEY POINT: {data.text}
+                    </span>
+                    </div>
+                );
+                
+                case 'section_header':
+                return (
+                    <div className="mt-16 mb-8 border-b-4 border-gray-100 pb-4">
+                        <h2 className="text-4xl font-extrabold text-gray-800 tracking-tight">{data.text}</h2>
+                    </div>
+                );
+
+                default:
+                return <div className="p-8 bg-gray-100 rounded-2xl mb-8 text-xl">{data.text}</div>;
+            }
+        };
+
+        const QuizMode = ({ onFinish }) => {
+            const [qIndex, setQIndex] = useState(0);
+            const [score, setScore] = useState(0);
+            const [showResult, setShowResult] = useState(false);
+            const [selectedOption, setSelectedOption] = useState(null);
+            const [isCorrect, setIsCorrect] = useState(false);
+            const [attempts, setAttempts] = useState(0);
+
+            const questions = [
+                { q: "What is the gradient of a displacement-time graph?", options: ["Acceleration", "Velocity", "Distance", "Force"], ans: 1 },
+                { q: "Which of these is a vector quantity?", options: ["Speed", "Mass", "Time", "Displacement"], ans: 3 },
+                { q: "What is the unit for Acceleration?", options: ["ms⁻¹", "ms⁻²", "N", "kg"], ans: 1 },
+                { q: "If net force is zero, the object is...", options: ["Stationary or Uniform Velocity", "Accelerating", "Decelerating", "Moving backwards"], ans: 0 },
+                { q: "Impulsive force decreases when time of impact...", options: ["Decreases", "Increases", "Stays same", "Becomes zero"], ans: 1 }
+            ];
+
+            const handleOptionClick = (idx) => {
+                // If already correct, prevent changing selection
+                if (isCorrect) return;
+
+                setSelectedOption(idx);
+                
+                if (idx === questions[qIndex].ans) {
+                setIsCorrect(true);
+                if (attempts === 0) {
+                    setScore(prev => prev + 1);
+                }
+                } else {
+                setIsCorrect(false);
+                setAttempts(prev => prev + 1);
+                }
+            };
+
+            const handleNext = () => {
+                if (qIndex < questions.length - 1) {
+                setQIndex(prev => prev + 1);
+                setSelectedOption(null);
+                setIsCorrect(false);
+                setAttempts(0);
+                } else {
+                setShowResult(true);
+                }
+            };
+
+            if (showResult) {
+                return (
+                <div className="flex flex-col items-center justify-center h-full p-20 text-center bg-white rounded-[3rem] shadow-2xl max-w-4xl mx-auto">
+                    <Target size={100} className="text-indigo-600 mb-8" />
+                    <h2 className="text-5xl font-bold mb-6 text-gray-800">Quiz Complete!</h2>
+                    <p className="text-3xl mb-12 text-gray-600">You scored <span className="text-indigo-600 font-extrabold text-5xl ml-2">{score} / {questions.length}</span></p>
+                    <button onClick={onFinish} className="bg-indigo-600 text-white px-12 py-5 text-xl rounded-full font-bold hover:bg-indigo-700 shadow-xl hover:scale-105 transition-transform">Back to Notes</button>
+                </div>
+                );
+            }
+
+            const currentQ = questions[qIndex];
+
+            return (
+                <div className="bg-gradient-to-br from-indigo-900 to-purple-800 text-white p-12 rounded-[3rem] h-auto min-h-[600px] flex flex-col justify-center max-w-5xl mx-auto shadow-2xl">
+                <div className="flex justify-between items-center mb-12 text-indigo-200 text-base font-bold uppercase tracking-widest border-b border-white/20 pb-6">
+                    <span>Question {qIndex + 1} of {questions.length}</span>
+                    <span className="bg-white/20 px-4 py-2 rounded-full text-white">Score: {score}</span>
+                </div>
+                <h3 className="text-4xl font-bold mb-12 leading-normal">{currentQ.q}</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {currentQ.options.map((opt, i) => {
+                    let btnClass = "w-full p-8 border-2 rounded-3xl text-left transition-all active:scale-[0.98] text-xl font-medium relative overflow-hidden ";
+                    
+                    if (selectedOption === i) {
+                        if (i === currentQ.ans) {
+                            btnClass += "bg-green-500 border-green-400 text-white shadow-lg"; // Correct selection
+                        } else {
+                            btnClass += "bg-red-500 border-red-400 text-white animate-shake"; // Wrong selection
+                        }
+                    } else if (isCorrect && i === currentQ.ans) {
+                        btnClass += "bg-green-500/50 border-green-400/50 text-white"; // Highlight correct answer if user clicked something else (optional, keeping hidden for retry logic but visual consistency)
+                    } else {
+                        btnClass += "bg-white/10 hover:bg-white/20 border-transparent hover:border-white/40";
+                    }
+
+                    return (
+                        <button key={i} onClick={() => handleOptionClick(i)} className={btnClass} disabled={isCorrect}>
+                            <div className="flex justify-between items-center z-10 relative">
+                            <span>{opt}</span>
+                            {selectedOption === i && i === currentQ.ans && <Check size={28} className="text-white" />}
+                            {selectedOption === i && i !== currentQ.ans && <X size={28} className="text-white" />}
+                            </div>
+                        </button>
+                    )
+                    })}
+                </div>
+
+                {/* Feedback & Next Area */}
+                <div className="mt-10 min-h-[80px] flex items-center justify-between border-t border-white/10 pt-6">
+                    <div className="text-xl font-bold">
+                        {selectedOption !== null && !isCorrect && (
+                        <span className="text-red-300 flex items-center animate-pulse"><AlertTriangle className="mr-3" size={28}/> Incorrect. Try again!</span>
+                        )}
+                        {isCorrect && (
+                        <span className="text-green-300 flex items-center animate-bounce"><Check className="mr-3" size={28}/> Correct! Great job.</span>
+                        )}
+                    </div>
+                    
+                    {isCorrect && (
+                    <button onClick={handleNext} className="px-10 py-4 bg-white text-indigo-900 rounded-full font-bold text-lg hover:scale-105 transition-transform flex items-center shadow-lg animate-fadeIn">
+                        {qIndex < questions.length - 1 ? "Next Question" : "See Results"} <ArrowRight className="ml-3" />
+                    </button>
+                    )}
+                </div>
+                </div>
+            );
+        };
+
+        // --- App Container ---
+
+        const App = () => {
+            const [started, setStarted] = useState(false);
+            const [currentTopicId, setCurrentTopicId] = useState(0);
+            const [quizMode, setQuizMode] = useState(false);
+
+            if (!started) return <IntroScreen onStart={() => setStarted(true)} />;
+
+            const topic = TOPICS[currentTopicId];
+
+            return (
+                <div className="flex flex-col h-screen bg-gray-50 font-sans w-full overflow-hidden relative">
+                
+                {/* Top Bar */}
+                <div className="bg-white/90 backdrop-blur-md px-8 py-5 shadow-sm z-20 flex justify-between items-center shrink-0 border-b border-gray-200">
+                    <h1 className="font-extrabold text-gray-800 text-2xl tracking-tight flex items-center">
+                    <BookOpen size={28} className="mr-3 text-indigo-600"/>
+                    Force & Motion I
+                    </h1>
+                    <button 
+                    onClick={() => setQuizMode(!quizMode)} 
+                    className={`text-base font-bold px-6 py-3 rounded-full flex items-center transition-all ${quizMode ? 'bg-indigo-600 text-white shadow-lg ring-2 ring-indigo-200' : 'bg-gray-100 text-gray-700 hover:bg-indigo-50 hover:text-indigo-600'}`}
+                    >
+                    {quizMode ? <BookOpen size={20} className="mr-2"/> : <Target size={20} className="mr-2"/>}
+                    {quizMode ? "Study Notes" : "Take Quiz"}
+                    </button>
+                </div>
+
+                {/* Main Content Area */}
+                <div className="flex-1 overflow-y-auto no-scrollbar pb-40 scroll-smooth bg-gray-50">
+                    {quizMode ? (
+                    <div className="p-10 h-full flex items-center justify-center">
+                        <QuizMode onFinish={() => setQuizMode(false)} />
+                    </div>
+                    ) : (
+                    <>
+                        <MindMap onSelectTopic={setCurrentTopicId} currentTopicId={currentTopicId} />
+                        
+                        <div className="px-8 md:px-16 py-10 max-w-7xl mx-auto animate-slideIn w-full">
+                        <div className="flex items-center space-x-3 text-gray-400 text-base font-bold uppercase tracking-widest mb-8">
+                            <span>Topic {currentTopicId + 1}</span>
+                            <ChevronRight size={18} />
+                            <span className="text-indigo-600">{topic.title}</span>
+                        </div>
+
+                        {topic.content.map((item, index) => (
+                            <ContentBlock key={index} data={item} />
+                        ))}
+
+                        {/* Navigation Buttons within Content */}
+                        <div className="flex justify-between mt-16 pt-10 border-t-2 border-gray-200">
+                            <button 
+                                disabled={currentTopicId === 0}
+                                onClick={() => {
+                                setCurrentTopicId(prev => Math.max(0, prev - 1));
+                                document.querySelector('.flex-1').scrollTo(0,0);
+                                }}
+                                className={`flex items-center px-8 py-4 rounded-2xl font-bold text-xl transition-all active:scale-95 ${currentTopicId === 0 ? 'text-gray-300' : 'text-indigo-700 bg-white shadow-sm hover:shadow-md border border-gray-100'}`}
+                            >
+                                <ChevronLeft size={28} className="mr-2" /> Previous
+                            </button>
+                            <button 
+                                disabled={currentTopicId === TOPICS.length - 1}
+                                onClick={() => {
+                                setCurrentTopicId(prev => Math.min(TOPICS.length - 1, prev + 1));
+                                document.querySelector('.flex-1').scrollTo(0,0);
+                                }}
+                                className={`flex items-center px-8 py-4 rounded-2xl font-bold text-xl transition-all active:scale-95 ${currentTopicId === TOPICS.length - 1 ? 'text-gray-300' : 'text-white bg-indigo-600 shadow-lg hover:bg-indigo-500 hover:shadow-indigo-200'}`}
+                            >
+                                Next Topic <ChevronRight size={28} className="ml-2" />
+                            </button>
+                        </div>
+                        </div>
+                    </>
+                    )}
+                </div>
+
+                {/* Bottom Floating Nav for iPad feel */}
+                {!quizMode && (
+                    <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 bg-white/95 backdrop-blur-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-white/50 rounded-full px-10 py-5 flex space-x-12 items-center z-30 hover:scale-105 transition-transform duration-300">
+                    <button onClick={() => {setCurrentTopicId(0); document.querySelector('.flex-1').scrollTo(0,0);}} className="text-gray-400 hover:text-indigo-600 transition-colors p-3 hover:bg-indigo-50 rounded-full">
+                        <RotateCcw size={28} />
+                    </button>
+                    <div className="text-lg font-bold text-gray-400 font-mono flex items-baseline">
+                        <span className="text-indigo-600 text-3xl mr-1">{currentTopicId + 1}</span> 
+                        <span className="text-sm">/ {TOPICS.length}</span>
+                    </div>
+                    <button onClick={() => setQuizMode(true)} className="text-gray-400 hover:text-rose-600 transition-colors p-3 hover:bg-rose-50 rounded-full">
+                        <Activity size={28} />
+                    </button>
+                    </div>
+                )}
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
