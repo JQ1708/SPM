@@ -174,6 +174,26 @@
       justify-self: center;
     }
 
+    .home-grid.triangle-layout {
+      grid-template-areas:
+        "top top"
+        "left right";
+      align-items: center;
+      justify-items: center;
+    }
+
+    .home-grid.triangle-layout .chapter-card:nth-child(1) {
+      grid-area: top;
+    }
+
+    .home-grid.triangle-layout .chapter-card:nth-child(2) {
+      grid-area: left;
+    }
+
+    .home-grid.triangle-layout .chapter-card:nth-child(3) {
+      grid-area: right;
+    }
+
     .chapter-card {
       aspect-ratio: 1 / 1;
       min-height: 220px;
@@ -635,6 +655,12 @@
         gap: 12px;
       }
 
+      .home-grid.triangle-layout {
+        grid-template-areas:
+          "top top"
+          "left right";
+      }
+
       .hero-card,
       .chapter-header,
       .set-strip,
@@ -880,63 +906,58 @@
 
     const chapters = [
       {
-        id: "relations",
-        title: "Relations & Functions",
+        id: "relations_functions",
+        title: "Relations and Functions",
         summary: "Domain, codomain, range, graphs, composite functions and inverse functions.",
       },
       {
-        id: "quadratic-equations",
-        title: "Quadratic Equations",
-        summary: "General form, roots, quadratic formula, discriminant, and tangent conditions.",
+        id: "quadratic_equations_inequalities",
+        title: "Quadratic Equations and Inequalities",
+        summary: "Quadratic equations, discriminant, graphs, intersections, and inequalities.",
       },
       {
-        id: "quadratic-graphs",
-        title: "Quadratic Graphs & Inequalities",
-        summary: "Shape, turning points, completing the square, inequalities, and intersections.",
-      },
-      {
-        id: "indices",
-        title: "Index Numbers",
+        id: "index_number",
+        title: "Index Number",
         summary: "Price indices, composite index, and weighted calculations.",
       },
     ];
 
     const deck = [
-      { id: "r1", chapterId: "relations", title: "Example 1", prompt: [slide(1)], answer: [slide(2)] },
-      { id: "r2", chapterId: "relations", title: "Example 2", prompt: [slide(3)], answer: [slide(4), slide(5), slide(6)] },
-      { id: "r3", chapterId: "relations", title: "Example 3", prompt: [slide(7)], answer: [slide(8), slide(9)] },
-      { id: "r4", chapterId: "relations", title: "Example 4", prompt: [slide(10)], answer: [slide(11), slide(12)] },
-      { id: "r5", chapterId: "relations", title: "Example 5", prompt: [slide(13)], answer: [slide(14), slide(15)] },
-      { id: "r6", chapterId: "relations", title: "Example 6", prompt: [slide(16)], answer: [slide(17), slide(18), slide(19), slide(20), slide(21)] },
+      { id: "c1_1", chapterId: "relations_functions", title: "Example 1", prompt: [slide(1)], answer: [slide(2)] },
+      { id: "c1_2", chapterId: "relations_functions", title: "Example 2", prompt: [slide(3)], answer: [slide(4), slide(5), slide(6)] },
+      { id: "c1_3", chapterId: "relations_functions", title: "Example 3", prompt: [slide(7)], answer: [slide(8), slide(9)] },
+      { id: "c1_4", chapterId: "relations_functions", title: "Example 4", prompt: [slide(10)], answer: [slide(11), slide(12)] },
+      { id: "c1_5", chapterId: "relations_functions", title: "Example 5", prompt: [slide(13)], answer: [slide(14), slide(15)] },
+      { id: "c1_6", chapterId: "relations_functions", title: "Example 6", prompt: [slide(16)], answer: [slide(17), slide(18)] },
+      { id: "c1_7", chapterId: "relations_functions", title: "Example 7", prompt: [slide(19)], answer: [slide(20), slide(21)] },
 
-      { id: "q1", chapterId: "quadratic-equations", title: "Example 1", prompt: [slide(22)], answer: [slide(23)] },
-      { id: "q2", chapterId: "quadratic-equations", title: "Example 2", prompt: [slide(24)], answer: [slide(25)] },
-      { id: "q3", chapterId: "quadratic-equations", title: "Example 3", prompt: [slide(26)], answer: [slide(27), slide(28), slide(29)] },
-      { id: "q4", chapterId: "quadratic-equations", title: "Example 4", prompt: [slide(30)], answer: [slide(31)] },
-      { id: "q5", chapterId: "quadratic-equations", title: "Example 5", prompt: [slide(32)], answer: [slide(33)] },
-      { id: "q6", chapterId: "quadratic-equations", title: "Example 6", prompt: [slide(34)], answer: [slide(35)] },
-      { id: "q7", chapterId: "quadratic-equations", title: "Example 7", prompt: [slide(36)], answer: [slide(37), slide(38)] },
-      { id: "q8", chapterId: "quadratic-equations", title: "Example 8", prompt: [slide(39)], answer: [slide(40)] },
-      { id: "q9", chapterId: "quadratic-equations", title: "Example 9", prompt: [slide(41)], answer: [slide(42)] },
-      { id: "q10", chapterId: "quadratic-equations", title: "Example 10", prompt: [slide(43)], answer: [slide(44)] },
-      { id: "q11", chapterId: "quadratic-equations", title: "Tangent To A Curve", prompt: [slide(45)], answer: [slide(46)] },
+      { id: "c2_1", chapterId: "quadratic_equations_inequalities", title: "Example 1", prompt: [slide(22)], answer: [slide(23)] },
+      { id: "c2_2", chapterId: "quadratic_equations_inequalities", title: "Example 2", prompt: [slide(24)], answer: [slide(25)] },
+      { id: "c2_3", chapterId: "quadratic_equations_inequalities", title: "Example 3", prompt: [slide(26)], answer: [slide(27), slide(28), slide(29)] },
+      { id: "c2_4", chapterId: "quadratic_equations_inequalities", title: "Example 4", prompt: [slide(30)], answer: [slide(31)] },
+      { id: "c2_5", chapterId: "quadratic_equations_inequalities", title: "Example 5", prompt: [slide(32)], answer: [slide(33)] },
+      { id: "c2_6", chapterId: "quadratic_equations_inequalities", title: "Example 6", prompt: [slide(34)], answer: [slide(35)] },
+      { id: "c2_7", chapterId: "quadratic_equations_inequalities", title: "Example 7", prompt: [slide(36)], answer: [slide(37), slide(38)] },
+      { id: "c2_8", chapterId: "quadratic_equations_inequalities", title: "Example 8", prompt: [slide(39)], answer: [slide(40)] },
+      { id: "c2_9", chapterId: "quadratic_equations_inequalities", title: "Example 9", prompt: [slide(41)], answer: [slide(42)] },
+      { id: "c2_10", chapterId: "quadratic_equations_inequalities", title: "Example 10", prompt: [slide(43)], answer: [slide(44)] },
+      { id: "c2_11", chapterId: "quadratic_equations_inequalities", title: "Example 11", prompt: [slide(45)], answer: [slide(46)] },
+      { id: "c2_12", chapterId: "quadratic_equations_inequalities", title: "Example 12", prompt: [slide(47)], answer: [slide(48)] },
+      { id: "c2_13", chapterId: "quadratic_equations_inequalities", title: "Example 13", prompt: [slide(49)], answer: [slide(50)] },
+      { id: "c2_14", chapterId: "quadratic_equations_inequalities", title: "Example 14", prompt: [slide(51)], answer: [slide(52)] },
+      { id: "c2_15", chapterId: "quadratic_equations_inequalities", title: "Example 15", prompt: [slide(53)], answer: [slide(54), slide(55)] },
+      { id: "c2_16", chapterId: "quadratic_equations_inequalities", title: "Example 16", prompt: [slide(56)], answer: [slide(57), slide(58), slide(59)] },
+      { id: "c2_17", chapterId: "quadratic_equations_inequalities", title: "Example 17", prompt: [slide(60)], answer: [slide(61)] },
+      { id: "c2_18", chapterId: "quadratic_equations_inequalities", title: "Example 18", prompt: [slide(62)], answer: [slide(63)] },
+      { id: "c2_19", chapterId: "quadratic_equations_inequalities", title: "Example 19", prompt: [slide(64)], answer: [slide(65)] },
+      { id: "c2_20", chapterId: "quadratic_equations_inequalities", title: "Example 20", prompt: [slide(66)], answer: [slide(67), slide(68)] },
+      { id: "c2_21", chapterId: "quadratic_equations_inequalities", title: "Example 21", prompt: [slide(69)], answer: [slide(70), slide(71)] },
 
-      { id: "g1", chapterId: "quadratic-graphs", title: "Example 1", prompt: [slide(47)], answer: [slide(48)] },
-      { id: "g2", chapterId: "quadratic-graphs", title: "Example 2", prompt: [slide(49)], answer: [slide(50)] },
-      { id: "g3", chapterId: "quadratic-graphs", title: "Example 3", prompt: [slide(51)], answer: [slide(52)] },
-      { id: "g4", chapterId: "quadratic-graphs", title: "Example 4", prompt: [slide(53)], answer: [slide(54), slide(55)] },
-      { id: "g5", chapterId: "quadratic-graphs", title: "Example 5", prompt: [slide(56)], answer: [slide(57), slide(58), slide(59)] },
-      { id: "g6", chapterId: "quadratic-graphs", title: "Example 6", prompt: [slide(60)], answer: [slide(61)] },
-      { id: "g7", chapterId: "quadratic-graphs", title: "Example 7", prompt: [slide(62)], answer: [slide(63)] },
-      { id: "g8", chapterId: "quadratic-graphs", title: "Example 8", prompt: [slide(64)], answer: [slide(65)] },
-      { id: "g9", chapterId: "quadratic-graphs", title: "Example 9", prompt: [slide(66)], answer: [slide(67), slide(68)] },
-      { id: "g10", chapterId: "quadratic-graphs", title: "Line And Circle", prompt: [slide(69)], answer: [slide(70), slide(71)] },
-
-      { id: "i1", chapterId: "indices", title: "Example 1", prompt: [slide(72)], answer: [slide(73), slide(74)] },
-      { id: "i2", chapterId: "indices", title: "Example 2", prompt: [slide(75)], answer: [slide(76), slide(77)] },
-      { id: "i3", chapterId: "indices", title: "Example 3", prompt: [slide(78)], answer: [slide(79), slide(80)] },
-      { id: "i4", chapterId: "indices", title: "Example 4", prompt: [slide(81), slide(82)], answer: [slide(83), slide(84)] },
-      { id: "i5", chapterId: "indices", title: "Composite Index Cake Question", prompt: [slide(85), slide(86)], answer: [slide(87), slide(88)] },
+      { id: "c3_1", chapterId: "index_number", title: "Example 1", prompt: [slide(72)], answer: [slide(73), slide(74)] },
+      { id: "c3_2", chapterId: "index_number", title: "Example 2", prompt: [slide(75)], answer: [slide(76), slide(77)] },
+      { id: "c3_3", chapterId: "index_number", title: "Example 3", prompt: [slide(78)], answer: [slide(79), slide(80)] },
+      { id: "c3_4", chapterId: "index_number", title: "Example 4", prompt: [slide(81)], answer: [slide(82), slide(83), slide(84)] },
+      { id: "c3_5", chapterId: "index_number", title: "Example 5", prompt: [slide(85)], answer: [slide(86), slide(87), slide(88)] },
     ];
 
     const chapterStats = chapters.map((chapter) => {
@@ -1121,6 +1142,7 @@
 
     const renderHome = () => {
       refs.homeChapterGrid.innerHTML = "";
+      refs.homeChapterGrid.className = `home-grid${chapterStats.length === 3 ? " triangle-layout" : ""}`;
       chapterStats.forEach((chapter) => {
         const card = document.createElement("button");
         card.type = "button";
