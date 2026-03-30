@@ -1,0 +1,1662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chemistry Revision Deck</title>
+  <style>
+    :root {
+      --paper: #fff7f1;
+      --paper-deep: #f1e4ef;
+      --ink: #22324a;
+      --ink-soft: #697894;
+      --mint: #2c7da0;
+      --mint-soft: rgba(44, 125, 160, 0.12);
+      --amber: #d66d4b;
+      --amber-soft: rgba(214, 109, 75, 0.14);
+      --panel: rgba(249, 251, 255, 0.84);
+      --line: rgba(34, 50, 74, 0.1);
+      --shadow: 0 26px 72px rgba(43, 52, 78, 0.16);
+      --radius: 32px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(97, 182, 214, 0.2), transparent 30%),
+        radial-gradient(circle at 85% 12%, rgba(228, 143, 114, 0.2), transparent 24%),
+        radial-gradient(circle at bottom center, rgba(130, 103, 186, 0.12), transparent 34%),
+        linear-gradient(180deg, #fff8f2 0%, #f4edf7 100%);
+      font-family: "Palatino Linotype", "Book Antiqua", Georgia, serif;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        radial-gradient(rgba(44, 125, 160, 0.08) 1px, transparent 1px),
+        radial-gradient(rgba(214, 109, 75, 0.05) 1px, transparent 1px);
+      background-size: 26px 26px, 42px 42px;
+      background-position: 0 0, 13px 13px;
+      mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.34), transparent 82%);
+    }
+
+    body.chapter-mode {
+      padding-bottom: 120px;
+    }
+
+    .app {
+      position: relative;
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      width: fit-content;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(44, 125, 160, 0.12);
+      color: var(--mint);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    h3 {
+      margin: 0;
+      font-family: "Baskerville", "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+    }
+
+    .panel,
+    .chapter-card,
+    .set-btn,
+    .viewer-shell,
+    .stage-panel,
+    .meta-panel,
+    .mobile-home-btn {
+      background: var(--panel);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, 0.72);
+      box-shadow: var(--shadow);
+      border-radius: var(--radius);
+    }
+
+    .home-shell,
+    .chapter-shell {
+      display: grid;
+      gap: 20px;
+    }
+
+    .home-shell[hidden],
+    .chapter-shell[hidden],
+    .viewer-shell[hidden] {
+      display: none;
+    }
+
+    .hero-card,
+    .home-note {
+      padding: 28px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-card::after {
+      content: "";
+      position: absolute;
+      width: 260px;
+      height: 260px;
+      right: -90px;
+      top: -90px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(97, 182, 214, 0.26) 0%, rgba(97, 182, 214, 0) 70%);
+    }
+
+    .hero-card h1 {
+      margin-top: 16px;
+      font-size: clamp(2.15rem, 8vw, 4.7rem);
+      line-height: 0.95;
+      max-width: 9ch;
+    }
+
+    .hero-copy,
+    .soft-copy,
+    .meta-copy,
+    .progress-copy {
+      margin: 0;
+      color: var(--ink-soft);
+      line-height: 1.65;
+    }
+
+    .hero-copy {
+      max-width: 62ch;
+      margin-top: 16px;
+      font-size: 1rem;
+    }
+
+    .hero-notes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.72);
+      font-size: 0.92rem;
+    }
+
+    .home-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(240px, 1fr));
+      gap: 22px;
+      justify-items: center;
+    }
+
+    .chapter-card {
+      width: min(100%, 320px);
+      aspect-ratio: 1 / 1;
+      min-height: 0;
+      padding: 30px 28px;
+      display: grid;
+      align-content: center;
+      justify-items: center;
+      gap: 16px;
+      text-align: center;
+      cursor: pointer;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at top, rgba(255, 255, 255, 0.98), rgba(245, 250, 255, 0.94) 58%, rgba(233, 243, 250, 0.92) 100%);
+      transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+    }
+
+    .chapter-card:hover,
+    .chapter-card:focus-visible,
+    .set-btn:hover,
+    .set-btn:focus-visible,
+    .home-btn:hover,
+    .home-btn:focus-visible,
+    .ghost-btn:hover,
+    .ghost-btn:focus-visible,
+    .main-btn:hover,
+    .main-btn:focus-visible {
+      transform: translateY(-2px);
+      border-color: rgba(214, 109, 75, 0.32);
+      background:
+        radial-gradient(circle at top, rgba(255, 255, 255, 0.98), rgba(245, 250, 255, 0.95) 58%, rgba(255, 239, 233, 0.94) 100%);
+      outline: none;
+    }
+
+    .chapter-card strong {
+      display: block;
+      font-size: 1.45rem;
+      margin: 4px 0 0;
+      max-width: 11ch;
+    }
+
+    .chapter-card p {
+      margin: 0;
+      color: var(--ink-soft);
+      line-height: 1.55;
+      font-size: 0.92rem;
+      max-width: 17ch;
+    }
+
+    .chapter-count {
+      display: grid;
+      gap: 6px;
+      margin-top: 0;
+      color: var(--amber);
+      font-weight: 700;
+      justify-items: center;
+    }
+
+    .chapter-top {
+      display: grid;
+      gap: 16px;
+    }
+
+    .chapter-header {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 16px;
+      align-items: center;
+      padding: 22px;
+    }
+
+    .home-btn,
+    .ghost-btn,
+    .main-btn {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 12px 16px;
+      background: rgba(255, 255, 255, 0.82);
+      color: var(--ink);
+      cursor: pointer;
+      font: inherit;
+      transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+    }
+
+    .home-btn {
+      font-weight: 700;
+      background: linear-gradient(135deg, #76c3e3, #2f7ea5);
+      color: #f9fcff;
+      border-color: transparent;
+      box-shadow: 0 14px 28px rgba(47, 126, 165, 0.28);
+    }
+
+    .home-btn.top {
+      width: 88px;
+      height: 88px;
+      min-width: 88px;
+      min-height: 88px;
+      padding: 0;
+      font-size: 0.96rem;
+    }
+
+    .home-btn.fixed {
+      display: none;
+    }
+
+    .main-btn {
+      background: linear-gradient(135deg, #ef8c69, #d55e42);
+      border-color: transparent;
+      color: #fff9f4;
+      font-weight: 700;
+      box-shadow: 0 12px 24px rgba(213, 94, 66, 0.24);
+    }
+
+    .ghost-btn[disabled],
+    .main-btn[disabled] {
+      opacity: 0.45;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .chapter-header h2 {
+      font-size: clamp(1.85rem, 3vw, 3rem);
+    }
+
+    .chapter-progress,
+    .viewer-status {
+      min-width: 240px;
+      padding: 14px 16px;
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.72);
+      border: 1px solid var(--line);
+      display: grid;
+      gap: 10px;
+    }
+
+    .progress-line {
+      height: 10px;
+      background: rgba(34, 50, 74, 0.08);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--mint), var(--amber));
+      transition: width 200ms ease;
+    }
+
+    .set-strip {
+      padding: 18px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .set-strip-head {
+      display: flex;
+      justify-content: center;
+      align-items: baseline;
+      gap: 12px;
+      text-align: center;
+    }
+
+    .set-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(220px, 260px));
+      gap: 18px;
+      justify-content: center;
+    }
+
+    .set-btn {
+      width: min(100%, 260px);
+      aspect-ratio: 1 / 1;
+      padding: 28px 24px;
+      display: grid;
+      place-items: center;
+      gap: 10px;
+      text-align: center;
+      cursor: pointer;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 35% 28%, rgba(255, 255, 255, 0.98), rgba(244, 249, 255, 0.94) 58%, rgba(233, 243, 250, 0.92) 100%);
+    }
+
+    .set-btn.active {
+      background: linear-gradient(155deg, #2f7ea5, #394d90);
+      border-color: var(--mint);
+      color: #fffdf8;
+    }
+
+    .set-btn.active small,
+    .set-btn.active .set-status {
+      color: rgba(255, 253, 248, 0.82);
+    }
+
+    .set-btn small {
+      display: block;
+      margin-top: 8px;
+      color: var(--ink-soft);
+      font-size: 0.8rem;
+      line-height: 1.45;
+      text-align: center;
+    }
+
+    .set-status {
+      color: var(--ink-soft);
+      font-size: 0.78rem;
+      text-align: center;
+      min-width: 0;
+    }
+
+    .viewer-shell {
+      padding: 20px;
+      display: grid;
+      gap: 18px;
+    }
+
+    .viewer-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      gap: 16px;
+    }
+
+    .viewer-title {
+      display: grid;
+      gap: 10px;
+    }
+
+    .chapter-tag {
+      display: inline-flex;
+      align-items: center;
+      width: fit-content;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: var(--mint-soft);
+      color: var(--mint);
+      font-size: 0.84rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .viewer-title h3 {
+      font-size: clamp(1.55rem, 2.5vw, 2.4rem);
+    }
+
+    .stage-panel {
+      padding: 16px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .stage-frame {
+      position: relative;
+      min-height: 68vh;
+      padding: 18px;
+      border-radius: 24px;
+      background:
+        linear-gradient(135deg, rgba(44, 125, 160, 0.08), rgba(214, 109, 75, 0.1)),
+        #fffdfd;
+      border: 1px solid rgba(34, 50, 74, 0.08);
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+
+    .stage-image {
+      max-width: 100%;
+      max-height: calc(68vh - 36px);
+      width: auto;
+      height: auto;
+      border-radius: 18px;
+      box-shadow: 0 24px 50px rgba(34, 50, 74, 0.14);
+      background: white;
+    }
+
+    .stage-label {
+      position: absolute;
+      top: 18px;
+      left: 18px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(255, 252, 248, 0.96);
+      border: 1px solid rgba(34, 50, 74, 0.08);
+      font-weight: 700;
+    }
+
+    .stage-hint {
+      position: absolute;
+      right: 18px;
+      bottom: 18px;
+      max-width: 320px;
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: rgba(34, 50, 74, 0.86);
+      color: #fffaf2;
+      font-size: 0.92rem;
+      line-height: 1.55;
+      box-shadow: 0 18px 34px rgba(34, 50, 74, 0.22);
+    }
+
+    .viewer-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .action-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      flex: 1;
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+
+    .meta-panel {
+      padding: 20px 22px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .flowing-cheer {
+      position: relative;
+      overflow: hidden;
+      min-height: 2.6em;
+      display: flex;
+      align-items: center;
+    }
+
+    .flowing-cheer span {
+      display: inline-block;
+      white-space: nowrap;
+      padding-inline: 12px;
+      animation: cheer-flow 8s linear infinite;
+      color: var(--amber);
+    }
+
+    .hotkeys {
+      display: grid;
+      gap: 8px;
+      color: var(--ink-soft);
+      font-size: 0.94rem;
+    }
+
+    .kbd {
+      display: inline-block;
+      min-width: 2.1em;
+      padding: 4px 8px;
+      border-radius: 10px;
+      background: rgba(34, 50, 74, 0.08);
+      border: 1px solid rgba(34, 50, 74, 0.08);
+      color: var(--ink);
+      font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+      font-size: 0.88rem;
+      text-align: center;
+      margin-right: 6px;
+    }
+
+    @keyframes cheer-flow {
+      0% {
+        transform: translateX(-105%);
+      }
+      100% {
+        transform: translateX(115%);
+      }
+    }
+
+    @media (max-width: 980px) {
+      .home-grid {
+        grid-template-columns: repeat(2, minmax(220px, 1fr));
+      }
+
+      .chapter-header,
+      .viewer-top {
+        grid-template-columns: 1fr;
+        display: grid;
+      }
+
+      .viewer-status,
+      .chapter-progress {
+        min-width: 0;
+      }
+
+      .set-grid {
+        grid-template-columns: repeat(2, minmax(200px, 240px));
+      }
+    }
+
+    @media (max-width: 720px) {
+      .app {
+        padding: 12px;
+      }
+
+      .hero-card,
+      .set-strip,
+      .viewer-shell,
+      .stage-panel,
+      .meta-panel {
+        padding: 18px;
+      }
+
+      .chapter-header {
+        padding: 18px;
+      }
+
+      .hero-card {
+        padding: 20px;
+      }
+
+      .hero-card h1 {
+        margin-top: 10px;
+        font-size: clamp(2rem, 10vw, 2.8rem);
+        max-width: 8ch;
+      }
+
+      .hero-copy {
+        margin-top: 12px;
+        font-size: 0.96rem;
+        line-height: 1.5;
+      }
+
+      .hero-notes {
+        gap: 8px;
+        margin-top: 14px;
+      }
+
+      .chip {
+        padding: 8px 12px;
+        font-size: 0.82rem;
+      }
+
+      .home-btn.top {
+        display: none;
+      }
+
+      .home-btn.fixed {
+        display: inline-flex;
+      }
+
+      .stage-frame {
+        min-height: 56vh;
+        padding: 12px;
+      }
+
+      .stage-image {
+        max-height: calc(56vh - 24px);
+      }
+
+      .stage-hint {
+        position: static;
+        max-width: none;
+        margin-top: 10px;
+      }
+
+      .viewer-actions {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .home-grid,
+      .set-grid {
+        grid-template-columns: 1fr;
+        gap: 14px;
+      }
+
+      .chapter-card,
+      .set-btn {
+        width: min(100%, 232px);
+        margin-inline: auto;
+      }
+
+      .chapter-card {
+        padding: 22px 18px;
+        gap: 10px;
+      }
+
+      .chapter-card strong {
+        font-size: 1.18rem;
+        max-width: 10ch;
+      }
+
+      .chapter-card p {
+        display: none;
+      }
+
+      .chapter-count {
+        gap: 4px;
+        font-size: 0.82rem;
+      }
+
+      .set-btn {
+        padding: 20px 18px;
+      }
+
+      .set-btn strong {
+        font-size: 1.08rem;
+      }
+
+      .set-btn small {
+        font-size: 0.74rem;
+        line-height: 1.35;
+      }
+
+      .set-status {
+        font-size: 0.72rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <section class="home-shell" id="homeView">
+      <div class="panel hero-card">
+        <div class="eyebrow">Chemistry Revision</div>
+        <h1>For Ayra Yasmin &amp; Karim</h1>
+        <p class="hero-copy">Make sure you try and understand every single example before exam ya!</p>
+        <div class="hero-notes">
+          <div class="chip">3 chapters</div>
+          <div class="chip">44 practice sets</div>
+          <div class="chip">Question first</div>
+          <div class="chip">Answer after trying</div>
+        </div>
+      </div>
+
+      <div class="home-grid" id="homeChapterGrid"></div>
+    </section>
+
+    <section class="chapter-shell" id="chapterView" hidden>
+      <div class="chapter-top">
+        <div class="panel chapter-header">
+          <button class="home-btn top" id="homeTopBtn" type="button">Home</button>
+          <div>
+            <div class="eyebrow" id="chapterEyebrow"></div>
+            <h2 id="chapterTitle"></h2>
+            <p class="soft-copy" id="chapterSummary"></p>
+          </div>
+          <div class="chapter-progress">
+            <strong id="chapterProgressHeadline"></strong>
+            <div class="progress-line">
+              <div class="progress-fill" id="chapterProgressFill"></div>
+            </div>
+            <p class="progress-copy" id="chapterProgressCopy"></p>
+          </div>
+        </div>
+
+        <div class="panel set-strip">
+          <div class="set-strip-head">
+            <div>
+              <h3>Choose One</h3>
+              <p class="progress-copy">Start with Notes or jump straight into Q&amp;A.</p>
+            </div>
+          </div>
+          <div class="set-grid" id="chapterSetGrid"></div>
+        </div>
+      </div>
+
+      <div class="viewer-shell" id="viewerShell" hidden>
+        <div class="viewer-top">
+          <div class="viewer-title">
+            <div class="chapter-tag" id="setChapterTag"></div>
+            <h3 id="setTitle"></h3>
+            <p class="progress-copy" id="setSubtitle"></p>
+          </div>
+
+          <div class="viewer-status">
+            <strong id="setProgressHeadline"></strong>
+            <div class="progress-line">
+              <div class="progress-fill" id="setProgressFill"></div>
+            </div>
+            <p class="progress-copy" id="setProgressCopy"></p>
+          </div>
+        </div>
+
+        <section class="stage-panel">
+          <div class="stage-frame">
+            <div class="stage-label" id="stageLabel"></div>
+            <img class="stage-image" id="stageImage" alt="" />
+            <div class="stage-hint" id="stageHint"></div>
+          </div>
+
+          <div class="viewer-actions">
+            <div class="action-group">
+              <button class="home-btn fixed" id="homeMobileBtn" type="button">Home</button>
+              <button class="ghost-btn" id="prevBtn" type="button">Prev</button>
+              <button class="ghost-btn hidden" id="toggleBtn" type="button">Question</button>
+              <button class="main-btn hidden" id="revealBtn" type="button">Show Answer</button>
+              <button class="ghost-btn" id="nextBtn" type="button">Next</button>
+            </div>
+            <p class="progress-copy" id="contextCopy"></p>
+          </div>
+        </section>
+
+        <section class="meta-grid">
+          <div class="meta-panel">
+            <div class="flowing-cheer">
+              <h3><span>You are the BEST! YEAH!</span></h3>
+            </div>
+            <div class="hotkeys">
+              <div><span class="kbd">&larr;</span> Previous page or set</div>
+              <div><span class="kbd">&rarr;</span> Next page or set</div>
+              <div><span class="kbd">Space</span> Reveal answer</div>
+              <div><span class="kbd">R</span> Return to question</div>
+              <div><span class="kbd">H</span> Home</div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const chapters = [
+      {
+        number: 2,
+        id: "matter_atomic_structure",
+        title: "Matter and Atomic Structure",
+        summary: "Chapter 2. Start with the notes, then work through six question-and-answer sets in order.",
+        notesCount: 10,
+        qaCount: 6,
+        deck: [
+          {
+            id: "c2_notes",
+            chapterId: "matter_atomic_structure",
+            type: "notes",
+            title: "Notes",
+            prompt: [
+              "./C2/Note/Screenshot 2026-03-30 092937.png",
+              "./C2/Note/Screenshot 2026-03-30 092951.png",
+              "./C2/Note/Screenshot 2026-03-30 093004.png",
+              "./C2/Note/Screenshot 2026-03-30 093012.png",
+              "./C2/Note/Screenshot 2026-03-30 093020.png",
+              "./C2/Note/Screenshot 2026-03-30 093026.png",
+              "./C2/Note/Screenshot 2026-03-30 093031.png",
+              "./C2/Note/Screenshot 2026-03-30 093037.png",
+              "./C2/Note/Screenshot 2026-03-30 093055.png",
+              "./C2/Note/Screenshot 2026-03-30 093102.png"
+            ],
+            answer: []
+          },
+          {
+            id: "c2_qa_1",
+            chapterId: "matter_atomic_structure",
+            type: "qa",
+            title: "Question 1",
+            prompt: ["./C2/Q&A/Screenshot 2026-03-30 093120.png"],
+            answer: ["./C2/Q&A/Screenshot 2026-03-30 093127.png"]
+          },
+          {
+            id: "c2_qa_2",
+            chapterId: "matter_atomic_structure",
+            type: "qa",
+            title: "Question 2",
+            prompt: ["./C2/Q&A/Screenshot 2026-03-30 093140.png"],
+            answer: ["./C2/Q&A/Screenshot 2026-03-30 093146.png"]
+          },
+          {
+            id: "c2_qa_3",
+            chapterId: "matter_atomic_structure",
+            type: "qa",
+            title: "Question 3",
+            prompt: ["./C2/Q&A/Screenshot 2026-03-30 093241.png"],
+            answer: ["./C2/Q&A/Screenshot 2026-03-30 093246.png"]
+          },
+          {
+            id: "c2_qa_4",
+            chapterId: "matter_atomic_structure",
+            type: "qa",
+            title: "Question 4",
+            prompt: ["./C2/Q&A/Screenshot 2026-03-30 093303.png"],
+            answer: ["./C2/Q&A/Screenshot 2026-03-30 093309.png"]
+          },
+          {
+            id: "c2_qa_5",
+            chapterId: "matter_atomic_structure",
+            type: "qa",
+            title: "Question 5",
+            prompt: ["./C2/Q&A/Screenshot 2026-03-30 093323.png"],
+            answer: ["./C2/Q&A/Screenshot 2026-03-30 093328.png"]
+          },
+          {
+            id: "c2_qa_6",
+            chapterId: "matter_atomic_structure",
+            type: "qa",
+            title: "Question 6",
+            prompt: ["./C2/Q&A/Screenshot 2026-03-30 093346.png"],
+            answer: ["./C2/Q&A/Screenshot 2026-03-30 093351.png"]
+          }
+        ]
+      },
+      {
+        number: 3,
+        id: "mole_concept_formula_equation",
+        title: "The Mole Concept, Chemical Formula and Equation",
+        summary: "Chapter 3. Review the notes first, then work through twenty-four question-and-answer sets.",
+        notesCount: 8,
+        qaCount: 24,
+        deck: [
+          {
+            id: "c3_notes",
+            chapterId: "mole_concept_formula_equation",
+            type: "notes",
+            title: "Notes",
+            prompt: [
+              "./C3/Note/Screenshot 2026-03-30 093419.png",
+              "./C3/Note/Screenshot 2026-03-30 093440.png",
+              "./C3/Note/Screenshot 2026-03-30 093628.png",
+              "./C3/Note/Screenshot 2026-03-30 093632.png",
+              "./C3/Note/Screenshot 2026-03-30 093645.png",
+              "./C3/Note/Screenshot 2026-03-30 093715.png",
+              "./C3/Note/Screenshot 2026-03-30 093720.png",
+              "./C3/Note/Screenshot 2026-03-30 093737.png"
+            ],
+            answer: []
+          },
+          {
+            id: "c3_qa_1",
+            chapterId: "mole_concept_formula_equation",
+            type: "qa",
+            title: "Question 1",
+            prompt: ["./C3/Q&A/Screenshot 2026-03-30 093512.png"],
+            answer: ["./C3/Q&A/Screenshot 2026-03-30 093528.png"]
+          },
+          {
+            id: "c3_qa_2",
+            chapterId: "mole_concept_formula_equation",
+            type: "qa",
+            title: "Question 2",
+            prompt: ["./C3/Q&A/Screenshot 2026-03-30 093635.png"],
+            answer: ["./C3/Q&A/Screenshot 2026-03-30 093640.png"]
+          },
+          {
+            id: "c3_qa_3",
+            chapterId: "mole_concept_formula_equation",
+            type: "qa",
+            title: "Question 3",
+            prompt: ["./C3/Q&A/Screenshot 2026-03-30 093649.png"],
+            answer: ["./C3/Q&A/Screenshot 2026-03-30 093655.png"]
+          },
+          {
+            id: "c3_qa_4",
+            chapterId: "mole_concept_formula_equation",
+            type: "qa",
+            title: "Question 4",
+            prompt: ["./C3/Q&A/Screenshot 2026-03-30 093742.png"],
+            answer: ["./C3/Q&A/Screenshot 2026-03-30 093748.png"]
+          },
+          {
+            id: "c3_qa_5",
+            chapterId: "mole_concept_formula_equation",
+            type: "qa",
+            title: "Question 5",
+            prompt: ["./C3/Q&A/Screenshot 2026-03-30 093813.png"],
+            answer: ["./C3/Q&A/Screenshot 2026-03-30 093818.png"]
+          },
+          {
+            id: "c3_qa_6",
+            chapterId: "mole_concept_formula_equation",
+            type: "qa",
+            title: "Question 6",
+            prompt: ["./C3/Q&A/Screenshot 2026-03-30 093825.png"],
+            answer: [
+              "./C3/Q&A/Screenshot 2026-03-30 093851.png",
+              "./C3/Q&A/Screenshot 2026-03-30 093855.png"
+            ]
+          },
+          {
+            id: "c3_qa_7",
+            chapterId: "mole_concept_formula_equation",
+            type: "qa",
+            title: "Question 7",
+            prompt: ["./C3/Q&A/Screenshot 2026-03-30 093901.png"],
+            answer: ["./C3/Q&A/Screenshot 2026-03-30 093907.png"]
+          },
+          {
+            id: "c3_qa_8",
+            chapterId: "mole_concept_formula_equation",
+            type: "qa",
+            title: "Question 8",
+            prompt: ["./C3/Q&A/Screenshot 2026-03-30 093916.png"],
+            answer: ["./C3/Q&A/Screenshot 2026-03-30 093921.png"]
+          },
+          {
+            id: "c3_qa_9",
+            chapterId: "mole_concept_formula_equation",
+            type: "qa",
+            title: "Question 9",
+            prompt: ["./C3/Q&A/Screenshot 2026-03-30 094014.png"],
+            answer: ["./C3/Q&A/Screenshot 2026-03-30 094020.png"]
+          },
+          {
+            id: "c3_qa_10",
+            chapterId: "mole_concept_formula_equation",
+            type: "qa",
+            title: "Question 10",
+            prompt: ["./C3/Q&A/Screenshot 2026-03-30 094027.png"],
+            answer: [
+              "./C3/Q&A/Screenshot 2026-03-30 094033.png",
+              "./C3/Q&A/Screenshot 2026-03-30 094038.png"
+            ]
+          },
+          {
+            id: "c3_qa_11",
+            chapterId: "mole_concept_formula_equation",
+            type: "qa",
+            title: "Question 11",
+            prompt: ["./C3/Q&A/Screenshot 2026-03-30 094124.png"],
+            answer: ["./C3/Q&A/Screenshot 2026-03-30 094130.png"]
+          },
+          {
+            id: "c3_qa_12",
+            chapterId: "mole_concept_formula_equation",
+            type: "qa",
+            title: "Question 12",
+            prompt: ["./C3/Q&A/Screenshot 2026-03-30 094136.png"],
+            answer: ["./C3/Q&A/Screenshot 2026-03-30 094141.png"]
+          },
+          {
+            id: "c3_qa_13",
+            chapterId: "mole_concept_formula_equation",
+            type: "qa",
+            title: "Question 13",
+            prompt: ["./C3/Q&A/Screenshot 2026-03-30 094151.png"],
+            answer: ["./C3/Q&A/Screenshot 2026-03-30 094156.png"]
+          },
+          {
+            id: "c3_qa_14",
+            chapterId: "mole_concept_formula_equation",
+            type: "qa",
+            title: "Question 14",
+            prompt: ["./C3/Q&A/Screenshot 2026-03-30 094202.png"],
+            answer: ["./C3/Q&A/Screenshot 2026-03-30 094207.png"]
+          },
+          {
+            id: "c3_qa_15",
+            chapterId: "mole_concept_formula_equation",
+            type: "qa",
+            title: "Question 15",
+            prompt: ["./C3/Q&A/Screenshot 2026-03-30 094213.png"],
+            answer: ["./C3/Q&A/Screenshot 2026-03-30 094220.png"]
+          },
+          {
+            id: "c3_qa_16",
+            chapterId: "mole_concept_formula_equation",
+            type: "qa",
+            title: "Question 16",
+            prompt: ["./C3/Q&A/Screenshot 2026-03-30 094237.png"],
+            answer: ["./C3/Q&A/Screenshot 2026-03-30 094241.png"]
+          },
+          {
+            id: "c3_qa_17",
+            chapterId: "mole_concept_formula_equation",
+            type: "qa",
+            title: "Question 17",
+            prompt: ["./C3/Q&A/Screenshot 2026-03-30 094250.png"],
+            answer: [
+              "./C3/Q&A/Screenshot 2026-03-30 094256.png",
+              "./C3/Q&A/Screenshot 2026-03-30 094304.png"
+            ]
+          },
+          {
+            id: "c3_qa_18",
+            chapterId: "mole_concept_formula_equation",
+            type: "qa",
+            title: "Question 18",
+            prompt: ["./C3/Q&A/Screenshot 2026-03-30 094317.png"],
+            answer: [
+              "./C3/Q&A/Screenshot 2026-03-30 094332.png",
+              "./C3/Q&A/Screenshot 2026-03-30 094336.png"
+            ]
+          },
+          {
+            id: "c3_qa_19",
+            chapterId: "mole_concept_formula_equation",
+            type: "qa",
+            title: "Question 19",
+            prompt: ["./C3/Q&A/Screenshot 2026-03-30 094349.png"],
+            answer: [
+              "./C3/Q&A/Screenshot 2026-03-30 094354.png",
+              "./C3/Q&A/Screenshot 2026-03-30 094359.png"
+            ]
+          },
+          {
+            id: "c3_qa_20",
+            chapterId: "mole_concept_formula_equation",
+            type: "qa",
+            title: "Question 20",
+            prompt: ["./C3/Q&A/Screenshot 2026-03-30 094405.png"],
+            answer: ["./C3/Q&A/Screenshot 2026-03-30 094413.png"]
+          },
+          {
+            id: "c3_qa_21",
+            chapterId: "mole_concept_formula_equation",
+            type: "qa",
+            title: "Question 21",
+            prompt: ["./C3/Q&A/Screenshot 2026-03-30 094419.png"],
+            answer: ["./C3/Q&A/Screenshot 2026-03-30 094427.png"]
+          },
+          {
+            id: "c3_qa_22",
+            chapterId: "mole_concept_formula_equation",
+            type: "qa",
+            title: "Question 22",
+            prompt: ["./C3/Q&A/Screenshot 2026-03-30 094433.png"],
+            answer: [
+              "./C3/Q&A/Screenshot 2026-03-30 094920.png",
+              "./C3/Q&A/Screenshot 2026-03-30 095019.png"
+            ]
+          },
+          {
+            id: "c3_qa_23",
+            chapterId: "mole_concept_formula_equation",
+            type: "qa",
+            title: "Question 23",
+            prompt: ["./C3/Q&A/Screenshot 2026-03-30 095032.png"],
+            answer: ["./C3/Q&A/Screenshot 2026-03-30 095036.png"]
+          },
+          {
+            id: "c3_qa_24",
+            chapterId: "mole_concept_formula_equation",
+            type: "qa",
+            title: "Question 24",
+            prompt: ["./C3/Q&A/Screenshot 2026-03-30 095042.png"],
+            answer: ["./C3/Q&A/Screenshot 2026-03-30 095047.png"]
+          }
+        ]
+      },
+      {
+        number: 4,
+        id: "periodic_table_elements",
+        title: "The Periodic Table of Elements",
+        summary: "Chapter 4. Read the notes in sequence, then continue through fourteen question-and-answer sets.",
+        notesCount: 18,
+        qaCount: 14,
+        deck: [
+          {
+            id: "c4_notes",
+            chapterId: "periodic_table_elements",
+            type: "notes",
+            title: "Notes",
+            prompt: [
+              "./C4/Note/Screenshot 2026-03-30 095102.png",
+              "./C4/Note/Screenshot 2026-03-30 095109.png",
+              "./C4/Note/Screenshot 2026-03-30 095115.png",
+              "./C4/Note/Screenshot 2026-03-30 095121.png",
+              "./C4/Note/Screenshot 2026-03-30 095133.png",
+              "./C4/Note/Screenshot 2026-03-30 095138.png",
+              "./C4/Note/Screenshot 2026-03-30 095143.png",
+              "./C4/Note/Screenshot 2026-03-30 095149.png",
+              "./C4/Note/Screenshot 2026-03-30 095157.png",
+              "./C4/Note/Screenshot 2026-03-30 095644.png",
+              "./C4/Note/Screenshot 2026-03-30 095651.png",
+              "./C4/Note/Screenshot 2026-03-30 095658.png",
+              "./C4/Note/Screenshot 2026-03-30 095709.png",
+              "./C4/Note/Screenshot 2026-03-30 095716.png",
+              "./C4/Note/Screenshot 2026-03-30 095723.png",
+              "./C4/Note/Screenshot 2026-03-30 095729.png",
+              "./C4/Note/Screenshot 2026-03-30 095737.png",
+              "./C4/Note/Screenshot 2026-03-30 095754.png"
+            ],
+            answer: []
+          },
+          {
+            id: "c4_qa_1",
+            chapterId: "periodic_table_elements",
+            type: "qa",
+            title: "Question 1",
+            prompt: ["./C4/Q&A/Screenshot 2026-03-30 095812.png"],
+            answer: ["./C4/Q&A/Screenshot 2026-03-30 095817.png"]
+          },
+          {
+            id: "c4_qa_2",
+            chapterId: "periodic_table_elements",
+            type: "qa",
+            title: "Question 2",
+            prompt: ["./C4/Q&A/Screenshot 2026-03-30 095823.png"],
+            answer: ["./C4/Q&A/Screenshot 2026-03-30 095828.png"]
+          },
+          {
+            id: "c4_qa_3",
+            chapterId: "periodic_table_elements",
+            type: "qa",
+            title: "Question 3",
+            prompt: ["./C4/Q&A/Screenshot 2026-03-30 095836.png"],
+            answer: ["./C4/Q&A/Screenshot 2026-03-30 095844.png"]
+          },
+          {
+            id: "c4_qa_4",
+            chapterId: "periodic_table_elements",
+            type: "qa",
+            title: "Question 4",
+            prompt: ["./C4/Q&A/Screenshot 2026-03-30 095850.png"],
+            answer: ["./C4/Q&A/Screenshot 2026-03-30 095939.png"]
+          },
+          {
+            id: "c4_qa_5",
+            chapterId: "periodic_table_elements",
+            type: "qa",
+            title: "Question 5",
+            prompt: ["./C4/Q&A/Screenshot 2026-03-30 095956.png"],
+            answer: ["./C4/Q&A/Screenshot 2026-03-30 100008.png"]
+          },
+          {
+            id: "c4_qa_6",
+            chapterId: "periodic_table_elements",
+            type: "qa",
+            title: "Question 6",
+            prompt: ["./C4/Q&A/Screenshot 2026-03-30 100017.png"],
+            answer: ["./C4/Q&A/Screenshot 2026-03-30 100020.png"]
+          },
+          {
+            id: "c4_qa_7",
+            chapterId: "periodic_table_elements",
+            type: "qa",
+            title: "Question 7",
+            prompt: ["./C4/Q&A/Screenshot 2026-03-30 100035.png"],
+            answer: ["./C4/Q&A/Screenshot 2026-03-30 100039.png"]
+          },
+          {
+            id: "c4_qa_8",
+            chapterId: "periodic_table_elements",
+            type: "qa",
+            title: "Question 8",
+            prompt: ["./C4/Q&A/Screenshot 2026-03-30 100048.png"],
+            answer: ["./C4/Q&A/Screenshot 2026-03-30 100054.png"]
+          },
+          {
+            id: "c4_qa_9",
+            chapterId: "periodic_table_elements",
+            type: "qa",
+            title: "Question 9",
+            prompt: ["./C4/Q&A/Screenshot 2026-03-30 100105.png"],
+            answer: ["./C4/Q&A/Screenshot 2026-03-30 100112.png"]
+          },
+          {
+            id: "c4_qa_10",
+            chapterId: "periodic_table_elements",
+            type: "qa",
+            title: "Question 10",
+            prompt: ["./C4/Q&A/Screenshot 2026-03-30 100120.png"],
+            answer: ["./C4/Q&A/Screenshot 2026-03-30 100126.png"]
+          },
+          {
+            id: "c4_qa_11",
+            chapterId: "periodic_table_elements",
+            type: "qa",
+            title: "Question 11",
+            prompt: ["./C4/Q&A/Screenshot 2026-03-30 100137.png"],
+            answer: ["./C4/Q&A/Screenshot 2026-03-30 100145.png"]
+          },
+          {
+            id: "c4_qa_12",
+            chapterId: "periodic_table_elements",
+            type: "qa",
+            title: "Question 12",
+            prompt: ["./C4/Q&A/Screenshot 2026-03-30 100154.png"],
+            answer: ["./C4/Q&A/Screenshot 2026-03-30 100207.png"]
+          },
+          {
+            id: "c4_qa_13",
+            chapterId: "periodic_table_elements",
+            type: "qa",
+            title: "Question 13",
+            prompt: ["./C4/Q&A/Screenshot 2026-03-30 100217.png"],
+            answer: ["./C4/Q&A/Screenshot 2026-03-30 100222.png"]
+          },
+          {
+            id: "c4_qa_14",
+            chapterId: "periodic_table_elements",
+            type: "qa",
+            title: "Question 14",
+            prompt: ["./C4/Q&A/Screenshot 2026-03-30 100237.png"],
+            answer: ["./C4/Q&A/Screenshot 2026-03-30 100242.png"]
+          }
+        ]
+      }
+    ];
+
+    const deck = chapters.flatMap((chapter) => chapter.deck);
+    const chapterStats = chapters.map((chapter) => ({
+      ...chapter,
+      count: chapter.deck.length,
+      firstIndex: deck.findIndex((entry) => entry.chapterId === chapter.id)
+    }));
+
+    const storageKey = "chemistry-revision-state-v1";
+    const saved = JSON.parse(localStorage.getItem(storageKey) || "{}");
+
+    const state = {
+      mode: "home",
+      currentChapterId: saved.currentChapterId || chapters[0].id,
+      currentIndex: Number.isInteger(saved.currentIndex) ? saved.currentIndex : 0,
+      track: saved.track === "notes" || saved.track === "qa" ? saved.track : null,
+      phase: saved.phase === "answer" ? "answer" : "prompt",
+      page: Number.isInteger(saved.page) ? saved.page : 0,
+      revealed: saved.revealed || {}
+    };
+
+    const refs = {
+      homeView: document.getElementById("homeView"),
+      chapterView: document.getElementById("chapterView"),
+      homeChapterGrid: document.getElementById("homeChapterGrid"),
+      chapterEyebrow: document.getElementById("chapterEyebrow"),
+      chapterTitle: document.getElementById("chapterTitle"),
+      chapterSummary: document.getElementById("chapterSummary"),
+      chapterProgressHeadline: document.getElementById("chapterProgressHeadline"),
+      chapterProgressFill: document.getElementById("chapterProgressFill"),
+      chapterProgressCopy: document.getElementById("chapterProgressCopy"),
+      chapterSetGrid: document.getElementById("chapterSetGrid"),
+      viewerShell: document.getElementById("viewerShell"),
+      setChapterTag: document.getElementById("setChapterTag"),
+      setTitle: document.getElementById("setTitle"),
+      setSubtitle: document.getElementById("setSubtitle"),
+      setProgressHeadline: document.getElementById("setProgressHeadline"),
+      setProgressFill: document.getElementById("setProgressFill"),
+      setProgressCopy: document.getElementById("setProgressCopy"),
+      stageLabel: document.getElementById("stageLabel"),
+      stageImage: document.getElementById("stageImage"),
+      stageHint: document.getElementById("stageHint"),
+      prevBtn: document.getElementById("prevBtn"),
+      toggleBtn: document.getElementById("toggleBtn"),
+      revealBtn: document.getElementById("revealBtn"),
+      nextBtn: document.getElementById("nextBtn"),
+      contextCopy: document.getElementById("contextCopy"),
+      homeTopBtn: document.getElementById("homeTopBtn"),
+      homeMobileBtn: document.getElementById("homeMobileBtn")
+    };
+
+    const chapterEntries = (chapterId) => deck.filter((entry) => entry.chapterId === chapterId);
+    const trackEntries = (chapterId, track) => chapterEntries(chapterId).filter((entry) => entry.type === track);
+    const currentEntry = () => deck[state.currentIndex];
+    const currentChapter = () => chapterStats.find((chapter) => chapter.id === state.currentChapterId);
+    const currentTrackItems = () => state.track ? trackEntries(state.currentChapterId, state.track) : [];
+    const isRevealed = (entry) => Boolean(state.revealed[entry.id]);
+    const hasAnswer = (entry) => entry.type === "qa" && entry.answer.length > 0;
+    const visibleSlides = (entry, phase) => (phase === "answer" ? entry.answer : entry.prompt);
+    const currentTrackIndex = () => currentTrackItems().findIndex((entry) => entry.id === currentEntry().id);
+    const firstTrackIndex = (chapterId, track) => deck.findIndex((entry) => entry.chapterId === chapterId && entry.type === track);
+
+    const persist = () => {
+      localStorage.setItem(storageKey, JSON.stringify(state));
+    };
+
+    const normalizeState = () => {
+      if (!deck[state.currentIndex]) {
+        state.currentIndex = 0;
+      }
+
+      if (!chapterStats.some((chapter) => chapter.id === state.currentChapterId)) {
+        state.currentChapterId = chapters[0].id;
+      }
+
+      if (state.track) {
+        const trackIndex = firstTrackIndex(state.currentChapterId, state.track);
+        if (trackIndex === -1) {
+          state.track = null;
+        } else if (!currentEntry() || currentEntry().chapterId !== state.currentChapterId || currentEntry().type !== state.track) {
+          state.currentIndex = trackIndex;
+        }
+      }
+
+      const entry = currentEntry();
+      if (!entry) {
+        return;
+      }
+
+      if ((state.phase === "answer" && !hasAnswer(entry)) || (state.phase === "answer" && !isRevealed(entry))) {
+        state.phase = "prompt";
+        state.page = 0;
+      }
+
+      const slides = visibleSlides(entry, state.phase);
+      if (!slides[state.page]) {
+        state.page = 0;
+      }
+    };
+
+    const openHome = () => {
+      state.mode = "home";
+      persist();
+      render();
+    };
+
+    const openChapter = (chapterId) => {
+      state.mode = "chapter";
+      state.currentChapterId = chapterId;
+      state.track = null;
+      state.phase = "prompt";
+      state.page = 0;
+      persist();
+      render();
+    };
+
+    const openTrack = (track) => {
+      const index = firstTrackIndex(state.currentChapterId, track);
+      if (index === -1) {
+        return;
+      }
+      state.track = track;
+      state.currentIndex = index;
+      state.phase = "prompt";
+      state.page = 0;
+      persist();
+      render();
+    };
+
+    const openSet = (index) => {
+      state.mode = "chapter";
+      state.currentIndex = index;
+      state.currentChapterId = deck[index].chapterId;
+      state.track = deck[index].type;
+      state.phase = "prompt";
+      state.page = 0;
+      persist();
+      render();
+    };
+
+    const moveToSiblingSet = (direction) => {
+      const items = currentTrackItems();
+      const pos = currentTrackIndex();
+      const nextPos = pos + direction;
+      if (nextPos < 0 || nextPos >= items.length) {
+        return;
+      }
+      const target = deck.findIndex((entry) => entry.id === items[nextPos].id);
+      openSet(target);
+    };
+
+    const revealAnswers = () => {
+      const entry = currentEntry();
+      if (!hasAnswer(entry)) {
+        return;
+      }
+      state.revealed[entry.id] = true;
+      state.phase = "answer";
+      state.page = 0;
+      persist();
+      render();
+    };
+
+    const goBackToQuestion = () => {
+      const entry = currentEntry();
+      if (!hasAnswer(entry)) {
+        return;
+      }
+      state.phase = "prompt";
+      state.page = 0;
+      persist();
+      render();
+    };
+
+    const goPrev = () => {
+      const entry = currentEntry();
+      const slides = visibleSlides(entry, state.phase);
+      if (state.page > 0) {
+        state.page -= 1;
+      } else if (state.phase === "answer") {
+        state.phase = "prompt";
+        state.page = Math.max(entry.prompt.length - 1, 0);
+      } else {
+        moveToSiblingSet(-1);
+        return;
+      }
+      persist();
+      render();
+    };
+
+    const goNext = () => {
+      const entry = currentEntry();
+      const slides = visibleSlides(entry, state.phase);
+      if (state.page < slides.length - 1) {
+        state.page += 1;
+      } else {
+        moveToSiblingSet(1);
+        return;
+      }
+      persist();
+      render();
+    };
+
+    const renderHome = () => {
+      refs.homeChapterGrid.innerHTML = "";
+      chapterStats.forEach((chapter) => {
+        const card = document.createElement("button");
+        card.type = "button";
+        card.className = "chapter-card";
+        card.innerHTML = `
+          <div>
+            <div class="eyebrow">Chapter ${chapter.number}</div>
+            <strong>${chapter.title}</strong>
+            <p>${chapter.summary}</p>
+          </div>
+          <div class="chapter-count">
+            <span>${chapter.notesCount} note pages</span>
+            <span>${chapter.qaCount} Q&amp;A sets</span>
+          </div>
+        `;
+        card.addEventListener("click", () => openChapter(chapter.id));
+        refs.homeChapterGrid.appendChild(card);
+      });
+    };
+
+    const renderSetGrid = () => {
+      refs.chapterSetGrid.innerHTML = "";
+      const chapter = currentChapter();
+      const options = [
+        {
+          track: "notes",
+          title: "Notes",
+          detail: `${chapter.notesCount} note page${chapter.notesCount > 1 ? "s" : ""}`,
+          status: "Read through"
+        },
+        {
+          track: "qa",
+          title: "Q&A",
+          detail: `${chapter.qaCount} practice set${chapter.qaCount > 1 ? "s" : ""}`,
+          status: "Question first"
+        }
+      ];
+
+      options.forEach((option) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = `set-btn${state.track === option.track ? " active" : ""}`;
+        btn.innerHTML = `
+          <span>
+            <strong>${option.title}</strong>
+            <small>${option.detail}</small>
+          </span>
+          <span class="set-status">${option.status}</span>
+        `;
+        btn.addEventListener("click", () => openTrack(option.track));
+        refs.chapterSetGrid.appendChild(btn);
+      });
+    };
+
+    const renderChapterView = () => {
+      const chapter = currentChapter();
+
+      refs.chapterEyebrow.textContent = "Chapter View";
+      refs.chapterTitle.textContent = chapter.title;
+      refs.chapterSummary.textContent = chapter.summary;
+      renderSetGrid();
+
+      if (!state.track) {
+        refs.chapterProgressHeadline.textContent = "Choose Notes or Q&A";
+        refs.chapterProgressFill.style.width = "0%";
+        refs.chapterProgressCopy.textContent = "Use Home any time to switch to another chapter.";
+        refs.viewerShell.hidden = true;
+        return;
+      }
+
+      refs.viewerShell.hidden = false;
+
+      const entry = currentEntry();
+      const items = currentTrackItems();
+      const itemIndex = currentTrackIndex();
+      const slides = visibleSlides(entry, state.phase);
+      const noteMode = entry.type === "notes";
+
+      refs.chapterProgressHeadline.textContent = noteMode
+        ? "Notes mode"
+        : `${itemIndex + 1} of ${items.length} Q&A sets`;
+      refs.chapterProgressFill.style.width = `${((itemIndex + 1) / items.length) * 100}%`;
+      refs.chapterProgressCopy.textContent = "Use Home any time to switch to another chapter.";
+
+      refs.setChapterTag.textContent = noteMode ? "Notes" : "Q&A";
+      refs.setTitle.textContent = entry.title;
+      refs.setSubtitle.textContent = noteMode
+        ? `${entry.prompt.length} note page${entry.prompt.length > 1 ? "s" : ""} in this chapter`
+        : `${itemIndex + 1} of ${items.length} in this chapter`;
+      refs.setProgressHeadline.textContent = noteMode ? "Reading mode" : `Question ${itemIndex + 1}`;
+      refs.setProgressFill.style.width = `${((itemIndex + 1) / items.length) * 100}%`;
+      refs.setProgressCopy.textContent = `${Math.round(((itemIndex + 1) / items.length) * 100)}% through this chapter`;
+
+      const pageKind = noteMode
+        ? "Note"
+        : state.phase === "prompt"
+          ? "Question"
+          : "Answer";
+
+      refs.stageLabel.textContent = `${pageKind} page ${state.page + 1} of ${slides.length}`;
+      refs.stageImage.src = slides[state.page];
+      refs.stageImage.alt = `${entry.title} ${pageKind.toLowerCase()} page ${state.page + 1}`;
+      refs.stageHint.textContent = noteMode
+        ? "Use these pages as a quick recap before attempting the question sets."
+        : state.phase === "prompt"
+          ? "Try first, don't be copycat！"
+          : "Use the answer pages to check the method, then continue to the next set.";
+
+      refs.toggleBtn.classList.toggle("hidden", noteMode || state.phase === "prompt");
+      refs.toggleBtn.disabled = noteMode || state.phase === "prompt";
+
+      refs.revealBtn.classList.toggle("hidden", noteMode || state.phase === "answer");
+      refs.revealBtn.disabled = noteMode || isRevealed(entry);
+      refs.revealBtn.textContent = isRevealed(entry) ? "Answer Ready" : "Show Answer";
+
+      refs.prevBtn.disabled = itemIndex === 0 && state.phase === "prompt" && state.page === 0;
+      refs.nextBtn.disabled = itemIndex === items.length - 1 && state.page === slides.length - 1;
+
+      refs.contextCopy.textContent = noteMode
+        ? `${entry.prompt.length} note page${entry.prompt.length > 1 ? "s" : ""} in this chapter intro`
+        : state.phase === "prompt"
+          ? ""
+          : `Checking page ${state.page + 1} of ${entry.answer.length} answer page${entry.answer.length > 1 ? "s" : ""}`;
+    };
+
+    const render = () => {
+      normalizeState();
+      const isHome = state.mode === "home";
+
+      document.body.classList.toggle("chapter-mode", !isHome);
+      refs.homeView.hidden = !isHome;
+      refs.chapterView.hidden = isHome;
+
+      renderHome();
+
+      if (!isHome) {
+        renderChapterView();
+      } else {
+        refs.viewerShell.hidden = true;
+      }
+    };
+
+    refs.prevBtn.addEventListener("click", goPrev);
+    refs.nextBtn.addEventListener("click", goNext);
+    refs.revealBtn.addEventListener("click", revealAnswers);
+    refs.toggleBtn.addEventListener("click", goBackToQuestion);
+    refs.homeTopBtn.addEventListener("click", openHome);
+    refs.homeMobileBtn.addEventListener("click", openHome);
+
+    document.addEventListener("keydown", (event) => {
+      if (state.mode !== "chapter") {
+        return;
+      }
+
+      if (event.target.matches("input, textarea, select")) {
+        return;
+      }
+
+      if (event.key === "ArrowLeft" && state.track) {
+        event.preventDefault();
+        goPrev();
+      }
+
+      if (event.key === "ArrowRight" && state.track) {
+        event.preventDefault();
+        goNext();
+      }
+
+      if (event.key === " " && state.track && hasAnswer(currentEntry()) && !isRevealed(currentEntry())) {
+        event.preventDefault();
+        revealAnswers();
+      }
+
+      if (event.key.toLowerCase() === "r" && state.track && hasAnswer(currentEntry())) {
+        event.preventDefault();
+        goBackToQuestion();
+      }
+
+      if (event.key.toLowerCase() === "h") {
+        event.preventDefault();
+        openHome();
+      }
+    });
+
+    render();
+  </script>
+</body>
+</html>
