@@ -1,0 +1,1439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Physics Revision Deck</title>
+  <style>
+    :root {
+      --bg: #f4efe5;
+      --bg-deep: #e6efe9;
+      --paper: rgba(255, 252, 245, 0.9);
+      --paper-strong: #fffdf8;
+      --ink: #13263e;
+      --ink-soft: #5e7085;
+      --sky: #47a9c6;
+      --sky-soft: rgba(71, 169, 198, 0.16);
+      --sun: #f4893d;
+      --sun-soft: rgba(244, 137, 61, 0.16);
+      --lime: #b6cb57;
+      --line: rgba(19, 38, 62, 0.1);
+      --shadow: 0 22px 56px rgba(34, 47, 67, 0.14);
+      --radius: 28px;
+      --radius-sm: 18px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 12% 18%, rgba(71, 169, 198, 0.18), transparent 24%),
+        radial-gradient(circle at 88% 10%, rgba(244, 137, 61, 0.18), transparent 18%),
+        radial-gradient(circle at 52% 100%, rgba(182, 203, 87, 0.16), transparent 28%),
+        linear-gradient(180deg, var(--bg) 0%, var(--bg-deep) 100%);
+      font-family: "Palatino Linotype", "Book Antiqua", Georgia, serif;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(19, 38, 62, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(19, 38, 62, 0.04) 1px, transparent 1px);
+      background-size: 22px 22px;
+      mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.36), transparent 80%);
+    }
+
+    body.chapter-mode {
+      padding-bottom: 110px;
+    }
+
+    h1,
+    h2,
+    h3 {
+      font-family: "Baskerville", "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+    }
+
+    button,
+    input,
+    textarea,
+    select {
+      font: inherit;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .app {
+      position: relative;
+      min-height: 100vh;
+      padding: 16px;
+    }
+
+    .home-shell,
+    .chapter-shell {
+      display: grid;
+      gap: 18px;
+      max-width: 1040px;
+      margin: 0 auto;
+    }
+
+    .home-shell[hidden],
+    .chapter-shell[hidden],
+    .viewer-shell[hidden] {
+      display: none;
+    }
+
+    .panel,
+    .chapter-card,
+    .set-card,
+    .viewer-shell,
+    .stage-shell,
+    .meta-card,
+    .mobile-home-btn {
+      background: var(--paper);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.7);
+      box-shadow: var(--shadow);
+    }
+
+    .panel {
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      width: fit-content;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(19, 38, 62, 0.06);
+      color: var(--ink);
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      font-weight: 800;
+    }
+
+    .hero {
+      position: relative;
+      padding: 26px;
+      display: grid;
+      gap: 20px;
+      overflow: hidden;
+    }
+
+    .hero::before,
+    .hero::after {
+      content: "";
+      position: absolute;
+      border-radius: 999px;
+      opacity: 0.9;
+    }
+
+    .hero::before {
+      width: 220px;
+      height: 220px;
+      right: -90px;
+      top: -100px;
+      background: radial-gradient(circle, rgba(71, 169, 198, 0.26) 0%, rgba(71, 169, 198, 0) 72%);
+    }
+
+    .hero::after {
+      width: 180px;
+      height: 180px;
+      left: -80px;
+      bottom: -90px;
+      background: radial-gradient(circle, rgba(244, 137, 61, 0.2) 0%, rgba(244, 137, 61, 0) 72%);
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+      gap: 18px;
+      align-items: end;
+    }
+
+    .hero-copy {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      gap: 14px;
+    }
+
+    .hero-copy h1 {
+      margin: 0;
+      font-size: clamp(2.35rem, 9vw, 4.6rem);
+      line-height: 0.92;
+      max-width: 10ch;
+    }
+
+    .hero-copy p,
+    .soft-copy,
+    .progress-copy,
+    .hint-copy {
+      margin: 0;
+      color: var(--ink-soft);
+      line-height: 1.58;
+    }
+
+    .hero-badges {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .hero-badge {
+      padding: 16px;
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.72);
+      border: 1px solid var(--line);
+      display: grid;
+      gap: 6px;
+    }
+
+    .hero-badge strong {
+      font-size: 1.5rem;
+      line-height: 1;
+    }
+
+    .hero-badge span {
+      color: var(--ink-soft);
+      font-size: 0.92rem;
+    }
+
+    .chapter-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .chapter-card {
+      position: relative;
+      width: 100%;
+      padding: 22px;
+      border-radius: 30px 30px 14px 30px;
+      border: 1px solid rgba(19, 38, 62, 0.08);
+      background:
+        linear-gradient(155deg, rgba(255, 255, 255, 0.98), rgba(245, 252, 252, 0.92)),
+        var(--paper-strong);
+      display: grid;
+      gap: 18px;
+      text-align: left;
+      cursor: pointer;
+      transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+    }
+
+    .chapter-card::after {
+      content: "";
+      position: absolute;
+      inset: auto 18px 18px auto;
+      width: 64px;
+      height: 10px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--sky), var(--sun));
+      opacity: 0.9;
+    }
+
+    .chapter-card:hover,
+    .chapter-card:focus-visible,
+    .set-card:hover,
+    .set-card:focus-visible,
+    .nav-btn:hover,
+    .nav-btn:focus-visible,
+    .action-btn:hover,
+    .action-btn:focus-visible,
+    .primary-btn:hover,
+    .primary-btn:focus-visible {
+      transform: translateY(-2px);
+      border-color: rgba(71, 169, 198, 0.3);
+      outline: none;
+    }
+
+    .chapter-card strong {
+      display: block;
+      font-size: 1.55rem;
+      margin-top: 8px;
+    }
+
+    .chapter-card p {
+      margin: 0;
+      color: var(--ink-soft);
+      line-height: 1.56;
+    }
+
+    .chapter-stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .tiny-pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(19, 38, 62, 0.06);
+      color: var(--ink);
+      font-size: 0.84rem;
+      font-weight: 700;
+    }
+
+    .chapter-head {
+      display: grid;
+      gap: 16px;
+    }
+
+    .chapter-banner {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 14px;
+      align-items: start;
+      padding: 18px;
+      border-radius: var(--radius);
+      background: linear-gradient(140deg, rgba(255, 255, 255, 0.78), rgba(248, 251, 244, 0.92));
+      border: 1px solid rgba(19, 38, 62, 0.08);
+      box-shadow: var(--shadow);
+    }
+
+    .chapter-badge {
+      width: 82px;
+      height: 82px;
+      border-radius: 26px;
+      background: linear-gradient(145deg, var(--sky), #2c7f98);
+      color: #f7fcff;
+      display: grid;
+      place-items: center;
+      font-size: 1.1rem;
+      font-weight: 800;
+      box-shadow: 0 16px 28px rgba(71, 169, 198, 0.24);
+      text-align: center;
+      line-height: 1.1;
+    }
+
+    .chapter-copy {
+      display: grid;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .chapter-copy h2 {
+      margin: 0;
+      font-size: clamp(1.8rem, 5vw, 3rem);
+      line-height: 0.96;
+    }
+
+    .chapter-progress {
+      display: grid;
+      gap: 10px;
+      padding: 16px;
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.66);
+      border: 1px solid var(--line);
+    }
+
+    .progress-line {
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(19, 38, 62, 0.08);
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--sky), var(--sun), var(--lime));
+      transition: width 180ms ease;
+    }
+
+    .chapter-topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .nav-btn,
+    .action-btn,
+    .primary-btn,
+    .mobile-home-btn {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 12px 16px;
+      cursor: pointer;
+      transition: transform 180ms ease, border-color 180ms ease, background 180ms ease, opacity 180ms ease;
+    }
+
+    .nav-btn,
+    .action-btn {
+      background: rgba(255, 255, 255, 0.8);
+      color: var(--ink);
+    }
+
+    .primary-btn {
+      background: linear-gradient(135deg, var(--sun), #ef6a2d);
+      color: #fffaf5;
+      border-color: transparent;
+      box-shadow: 0 14px 24px rgba(239, 106, 45, 0.2);
+      font-weight: 800;
+    }
+
+    .nav-btn[disabled],
+    .action-btn[disabled],
+    .primary-btn[disabled] {
+      opacity: 0.44;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .set-strip {
+      padding: 18px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .set-strip h3 {
+      margin: 0;
+      font-size: 1.15rem;
+    }
+
+    .set-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .set-card {
+      padding: 18px;
+      border-radius: 24px;
+      border: 1px solid rgba(19, 38, 62, 0.08);
+      text-align: left;
+      cursor: pointer;
+      display: grid;
+      gap: 10px;
+      background: linear-gradient(155deg, rgba(255, 255, 255, 0.94), rgba(250, 251, 247, 0.94));
+    }
+
+    .set-card.active {
+      background: linear-gradient(155deg, #17395a, #235f76);
+      color: #f4fbff;
+      border-color: rgba(19, 38, 62, 0.28);
+    }
+
+    .set-card.active .soft-copy,
+    .set-card.active .set-status {
+      color: rgba(244, 251, 255, 0.82);
+    }
+
+    .set-status {
+      font-size: 0.84rem;
+      color: var(--ink-soft);
+      font-weight: 700;
+    }
+
+    .viewer-shell {
+      padding: 18px;
+      border-radius: var(--radius);
+      display: grid;
+      gap: 18px;
+    }
+
+    .viewer-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      gap: 16px;
+    }
+
+    .viewer-title {
+      display: grid;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .viewer-title h3 {
+      margin: 0;
+      font-size: clamp(1.45rem, 4vw, 2.3rem);
+      line-height: 0.98;
+    }
+
+    .tagline {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      width: fit-content;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      background: var(--sky-soft);
+      color: #18647b;
+    }
+
+    .viewer-progress {
+      min-width: 220px;
+      padding: 16px;
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.66);
+      border: 1px solid var(--line);
+      display: grid;
+      gap: 10px;
+    }
+
+    .stage-shell {
+      padding: 14px;
+      border-radius: 26px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .stage-frame {
+      position: relative;
+      min-height: 62vh;
+      padding: 14px;
+      border-radius: 24px;
+      background:
+        linear-gradient(135deg, rgba(71, 169, 198, 0.08), rgba(244, 137, 61, 0.08)),
+        var(--paper-strong);
+      border: 1px solid rgba(19, 38, 62, 0.08);
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      touch-action: pan-y;
+    }
+
+    .stage-label {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(255, 253, 248, 0.94);
+      border: 1px solid rgba(19, 38, 62, 0.08);
+      font-size: 0.88rem;
+      font-weight: 800;
+    }
+
+    .stage-image {
+      max-width: 100%;
+      max-height: calc(62vh - 28px);
+      width: auto;
+      height: auto;
+      border-radius: 18px;
+      background: white;
+      box-shadow: 0 22px 44px rgba(19, 38, 62, 0.16);
+    }
+
+    .stage-hint {
+      position: absolute;
+      right: 14px;
+      bottom: 14px;
+      max-width: 330px;
+      padding: 12px 14px;
+      border-radius: 18px;
+      background: rgba(19, 38, 62, 0.86);
+      color: #fff9f1;
+      font-size: 0.9rem;
+      line-height: 1.5;
+      box-shadow: 0 16px 28px rgba(19, 38, 62, 0.18);
+    }
+
+    .viewer-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .action-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      flex: 1;
+    }
+
+    .flowing-cheer {
+      position: relative;
+      overflow: hidden;
+      min-height: 2.6em;
+      display: flex;
+      align-items: center;
+    }
+
+    .flowing-cheer span {
+      display: inline-block;
+      white-space: nowrap;
+      padding-inline: 12px;
+      animation: cheer-flow 8s linear infinite;
+      color: var(--sun);
+    }
+
+    .mobile-home-btn {
+      display: none;
+      position: fixed;
+      left: 16px;
+      right: 16px;
+      bottom: 16px;
+      z-index: 30;
+      justify-content: center;
+      padding: 14px 18px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #163759, #245f77);
+      color: #f7fbff;
+      border: none;
+      font-weight: 800;
+    }
+
+    @media (max-width: 840px) {
+      .hero-grid,
+      .chapter-grid,
+      .set-grid,
+      .meta-grid,
+      .viewer-top {
+        grid-template-columns: 1fr;
+        display: grid;
+      }
+
+      .viewer-progress,
+      .chapter-progress {
+        min-width: 0;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .app {
+        padding: 12px;
+      }
+
+      .hero,
+      .set-strip,
+      .viewer-shell,
+      .stage-shell {
+        padding: 16px;
+      }
+
+      .hero-copy h1 {
+        font-size: clamp(2rem, 12vw, 3.1rem);
+        max-width: 7ch;
+      }
+
+      .hero-badges,
+      .chapter-grid,
+      .set-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .chapter-card,
+      .set-card {
+        padding: 18px;
+      }
+
+      .chapter-card strong {
+        font-size: 1.32rem;
+      }
+
+      .chapter-banner {
+        grid-template-columns: 1fr;
+      }
+
+      .chapter-badge {
+        width: 76px;
+        height: 76px;
+      }
+
+      .chapter-topbar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .stage-frame {
+        min-height: 54vh;
+        padding: 10px;
+      }
+
+      .stage-image {
+        max-height: calc(54vh - 20px);
+      }
+
+      .stage-hint {
+        position: static;
+        max-width: none;
+        margin-top: 10px;
+      }
+
+      .viewer-actions {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .action-row {
+        justify-content: center;
+      }
+
+      .desktop-home-btn {
+        display: none;
+      }
+
+      .mobile-home-btn {
+        display: inline-flex;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation: none !important;
+        transition: none !important;
+      }
+    }
+
+    @keyframes cheer-flow {
+      0% {
+        transform: translateX(-105%);
+      }
+      100% {
+        transform: translateX(115%);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <section class="home-shell" id="homeView">
+      <div class="panel hero">
+        <div class="hero-grid">
+          <div class="hero-copy">
+            <div class="eyebrow">Physics Study Deck</div>
+            <h1>For Ayra Yasmin &amp; Karim</h1>
+            <p>Make sure you try and understand every single example before exam ya!</p>
+          </div>
+
+          <div class="hero-badges" id="heroBadges"></div>
+        </div>
+      </div>
+
+      <div class="chapter-grid" id="homeChapterGrid"></div>
+    </section>
+
+    <section class="chapter-shell" id="chapterView" hidden>
+      <div class="chapter-head">
+        <div class="chapter-topbar">
+          <button class="nav-btn desktop-home-btn" id="homeTopBtn" type="button">Home</button>
+          <div class="chapter-progress">
+            <strong id="chapterProgressHeadline"></strong>
+            <div class="progress-line">
+              <div class="progress-fill" id="chapterProgressFill"></div>
+            </div>
+            <p class="progress-copy" id="chapterProgressCopy"></p>
+          </div>
+        </div>
+
+        <div class="chapter-banner">
+          <div class="chapter-badge" id="chapterBadge"></div>
+          <div class="chapter-copy">
+            <div class="eyebrow" id="chapterEyebrow"></div>
+            <h2 id="chapterTitle"></h2>
+            <p class="soft-copy" id="chapterSummary"></p>
+          </div>
+        </div>
+
+        <div class="panel set-strip">
+          <div class="set-grid" id="chapterSetGrid"></div>
+        </div>
+      </div>
+
+      <div class="viewer-shell" id="viewerShell" hidden>
+        <div class="viewer-top">
+          <div class="viewer-title">
+            <div class="tagline" id="setChapterTag"></div>
+            <h3 id="setTitle"></h3>
+            <p class="progress-copy" id="setSubtitle"></p>
+          </div>
+
+          <div class="viewer-progress">
+            <strong id="setProgressHeadline"></strong>
+            <div class="progress-line">
+              <div class="progress-fill" id="setProgressFill"></div>
+            </div>
+            <p class="progress-copy" id="setProgressCopy"></p>
+          </div>
+        </div>
+
+        <div class="stage-shell">
+          <div class="stage-frame" id="stageFrame">
+            <div class="stage-label" id="stageLabel"></div>
+            <img class="stage-image" id="stageImage" alt="" />
+            <div class="stage-hint" id="stageHint"></div>
+          </div>
+
+          <div class="viewer-actions">
+            <div class="action-row">
+              <button class="action-btn" id="prevBtn" type="button">Prev</button>
+              <button class="action-btn hidden" id="toggleBtn" type="button">Back To Question</button>
+              <button class="primary-btn hidden" id="revealBtn" type="button">Show Answer</button>
+              <button class="action-btn" id="nextBtn" type="button">Next</button>
+            </div>
+            <p class="hint-copy" id="contextCopy"></p>
+          </div>
+        </div>
+        <div class="flowing-cheer">
+          <h3><span>You are the BEST! YEAH!</span></h3>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <button class="mobile-home-btn" id="homeMobileBtn" type="button">Home</button>
+
+  <script>
+    const imagePath = (folder, filename) => `./${folder}/${filename}`;
+
+    const c1NoteFiles = [
+      "Screenshot 2026-03-31 095616.png",
+      "Screenshot 2026-03-31 095623.png",
+      "Screenshot 2026-03-31 095630.png",
+      "Screenshot 2026-03-31 095640.png",
+      "Screenshot 2026-03-31 095646.png",
+      "Screenshot 2026-03-31 095652.png",
+      "Screenshot 2026-03-31 095658.png"
+    ].map((file) => imagePath("C1/Notes", file));
+
+    const c2NoteFiles = [
+      "Screenshot 2026-03-31 095842.png",
+      "Screenshot 2026-03-31 095955.png",
+      "Screenshot 2026-03-31 100003.png",
+      "Screenshot 2026-03-31 100019.png",
+      "Screenshot 2026-03-31 100024.png",
+      "Screenshot 2026-03-31 100032.png",
+      "Screenshot 2026-03-31 100038.png",
+      "Screenshot 2026-03-31 100107.png",
+      "Screenshot 2026-03-31 100113.png",
+      "Screenshot 2026-03-31 100119.png",
+      "Screenshot 2026-03-31 100126.png"
+    ].map((file) => imagePath("C2/Note", file));
+
+    const c2QaFiles = [
+      "Screenshot 2026-03-31 100337.png",
+      "Screenshot 2026-03-31 100346.png",
+      "Screenshot 2026-03-31 100355.png",
+      "Screenshot 2026-03-31 100401.png",
+      "Screenshot 2026-03-31 100407.png",
+      "Screenshot 2026-03-31 100417.png",
+      "Screenshot 2026-03-31 100425.png",
+      "Screenshot 2026-03-31 100432.png",
+      "Screenshot 2026-03-31 100444.png",
+      "Screenshot 2026-03-31 100449.png",
+      "Screenshot 2026-03-31 100537.png",
+      "Screenshot 2026-03-31 100542.png",
+      "Screenshot 2026-03-31 100551.png",
+      "Screenshot 2026-03-31 100556.png",
+      "Screenshot 2026-03-31 100616.png",
+      "Screenshot 2026-03-31 100620.png",
+      "Screenshot 2026-03-31 100626.png",
+      "Screenshot 2026-03-31 100631.png",
+      "Screenshot 2026-03-31 100636.png",
+      "Screenshot 2026-03-31 100643.png",
+      "Screenshot 2026-03-31 100653.png",
+      "Screenshot 2026-03-31 100659.png",
+      "Screenshot 2026-03-31 100704.png",
+      "Screenshot 2026-03-31 100743.png",
+      "Screenshot 2026-03-31 100748.png",
+      "Screenshot 2026-03-31 100753.png",
+      "Screenshot 2026-03-31 100800.png",
+      "Screenshot 2026-03-31 100804.png",
+      "Screenshot 2026-03-31 100809.png",
+      "Screenshot 2026-03-31 100814.png",
+      "Screenshot 2026-03-31 100820.png",
+      "Screenshot 2026-03-31 100825.png",
+      "Screenshot 2026-03-31 100831.png",
+      "Screenshot 2026-03-31 100835.png",
+      "Screenshot 2026-03-31 100902.png",
+      "Screenshot 2026-03-31 100908.png",
+      "Screenshot 2026-03-31 100916.png",
+      "Screenshot 2026-03-31 100922.png",
+      "Screenshot 2026-03-31 100930.png",
+      "Screenshot 2026-03-31 100935.png",
+      "Screenshot 2026-03-31 100945.png",
+      "Screenshot 2026-03-31 100953.png",
+      "Screenshot 2026-03-31 101001.png",
+      "Screenshot 2026-03-31 101009.png",
+      "Screenshot 2026-03-31 101040.png",
+      "Screenshot 2026-03-31 101045.png",
+      "Screenshot 2026-03-31 101054.png",
+      "Screenshot 2026-03-31 101058.png",
+      "Screenshot 2026-03-31 101105.png",
+      "Screenshot 2026-03-31 101113.png",
+      "Screenshot 2026-03-31 101522.png",
+      "Screenshot 2026-03-31 101527.png",
+      "Screenshot 2026-03-31 101534.png",
+      "Screenshot 2026-03-31 101541.png",
+      "Screenshot 2026-03-31 101546.png",
+      "Screenshot 2026-03-31 101550.png",
+      "Screenshot 2026-03-31 101600.png",
+      "Screenshot 2026-03-31 101605.png",
+      "Screenshot 2026-03-31 101610.png",
+      "Screenshot 2026-03-31 101615.png",
+      "Screenshot 2026-03-31 101625.png",
+      "Screenshot 2026-03-31 101630.png",
+      "Screenshot 2026-03-31 101635.png",
+      "Screenshot 2026-03-31 101639.png",
+      "Screenshot 2026-03-31 101647.png",
+      "Screenshot 2026-03-31 101653.png",
+      "Screenshot 2026-03-31 101702.png",
+      "Screenshot 2026-03-31 101707.png",
+      "Screenshot 2026-03-31 101720.png",
+      "Screenshot 2026-03-31 101726.png",
+      "Screenshot 2026-03-31 101733.png",
+      "Screenshot 2026-03-31 101736.png",
+      "Screenshot 2026-03-31 101742.png",
+      "Screenshot 2026-03-31 101747.png",
+      "Screenshot 2026-03-31 101754.png",
+      "Screenshot 2026-03-31 101759.png"
+    ].map((file) => imagePath("C2/Q&A", file));
+
+    const pairSequentialSlides = (slides) => {
+      const pairs = [];
+      for (let index = 0; index < slides.length; index += 2) {
+        const question = slides[index];
+        const answer = slides[index + 1];
+        if (question && answer) {
+          pairs.push({ prompt: [question], answer: [answer] });
+        }
+      }
+      return pairs;
+    };
+
+    const buildChapter = ({ number, id, title, summary, notes, qaPairs }) => {
+      const notesEntry = {
+        id: `${id}_notes`,
+        chapterId: id,
+        type: "notes",
+        title: "Notes",
+        prompt: notes,
+        answer: []
+      };
+
+      const qaEntries = qaPairs.map((pair, index) => ({
+        id: `${id}_qa_${index + 1}`,
+        chapterId: id,
+        type: "qa",
+        title: `Question ${index + 1}`,
+        prompt: pair.prompt,
+        answer: pair.answer
+      }));
+
+      return {
+        number,
+        id,
+        title,
+        summary,
+        notesCount: notes.length,
+        qaCount: qaEntries.length,
+        deck: [notesEntry, ...qaEntries]
+      };
+    };
+
+    const chapters = [
+      buildChapter({
+        number: 1,
+        id: "measurement",
+        title: "Measurement",
+        summary: "Chapter 1. Notes only. Read through the key pages first before moving on.",
+        notes: c1NoteFiles,
+        qaPairs: []
+      }),
+      buildChapter({
+        number: 2,
+        id: "force_motion_1",
+        title: "Force and Motion 1",
+        summary: "Chapter 2. Start with the notes, then move through thirty-eight question-and-answer pairs in filename order.",
+        notes: c2NoteFiles,
+        qaPairs: pairSequentialSlides(c2QaFiles)
+      })
+    ];
+
+    const deck = chapters.flatMap((chapter) => chapter.deck);
+    const chapterStats = chapters.map((chapter) => ({
+      ...chapter,
+      count: chapter.deck.length,
+      availableTracks: [
+        chapter.notesCount > 0 ? "notes" : null,
+        chapter.qaCount > 0 ? "qa" : null
+      ].filter(Boolean)
+    }));
+
+    const totalNotes = chapters.reduce((sum, chapter) => sum + chapter.notesCount, 0);
+    const totalQaSets = chapters.reduce((sum, chapter) => sum + chapter.qaCount, 0);
+
+    const storageKey = "physics-revision-state-v1";
+    const saved = JSON.parse(localStorage.getItem(storageKey) || "{}");
+
+    const state = {
+      mode: "home",
+      currentChapterId: saved.currentChapterId || chapters[0].id,
+      currentIndex: Number.isInteger(saved.currentIndex) ? saved.currentIndex : 0,
+      track: saved.track === "notes" || saved.track === "qa" ? saved.track : null,
+      phase: saved.phase === "answer" ? "answer" : "prompt",
+      page: Number.isInteger(saved.page) ? saved.page : 0,
+      revealed: saved.revealed || {}
+    };
+
+    const refs = {
+      homeView: document.getElementById("homeView"),
+      chapterView: document.getElementById("chapterView"),
+      homeChapterGrid: document.getElementById("homeChapterGrid"),
+      heroBadges: document.getElementById("heroBadges"),
+      chapterBadge: document.getElementById("chapterBadge"),
+      chapterEyebrow: document.getElementById("chapterEyebrow"),
+      chapterTitle: document.getElementById("chapterTitle"),
+      chapterSummary: document.getElementById("chapterSummary"),
+      chapterProgressHeadline: document.getElementById("chapterProgressHeadline"),
+      chapterProgressFill: document.getElementById("chapterProgressFill"),
+      chapterProgressCopy: document.getElementById("chapterProgressCopy"),
+      chapterSetGrid: document.getElementById("chapterSetGrid"),
+      viewerShell: document.getElementById("viewerShell"),
+      setChapterTag: document.getElementById("setChapterTag"),
+      setTitle: document.getElementById("setTitle"),
+      setSubtitle: document.getElementById("setSubtitle"),
+      setProgressHeadline: document.getElementById("setProgressHeadline"),
+      setProgressFill: document.getElementById("setProgressFill"),
+      setProgressCopy: document.getElementById("setProgressCopy"),
+      stageFrame: document.getElementById("stageFrame"),
+      stageLabel: document.getElementById("stageLabel"),
+      stageImage: document.getElementById("stageImage"),
+      stageHint: document.getElementById("stageHint"),
+      prevBtn: document.getElementById("prevBtn"),
+      toggleBtn: document.getElementById("toggleBtn"),
+      revealBtn: document.getElementById("revealBtn"),
+      nextBtn: document.getElementById("nextBtn"),
+      contextCopy: document.getElementById("contextCopy"),
+      homeTopBtn: document.getElementById("homeTopBtn"),
+      homeMobileBtn: document.getElementById("homeMobileBtn")
+    };
+
+    const chapterEntries = (chapterId) => deck.filter((entry) => entry.chapterId === chapterId);
+    const trackEntries = (chapterId, track) => chapterEntries(chapterId).filter((entry) => entry.type === track);
+    const currentEntry = () => deck[state.currentIndex];
+    const currentChapter = () => chapterStats.find((chapter) => chapter.id === state.currentChapterId);
+    const currentTrackItems = () => state.track ? trackEntries(state.currentChapterId, state.track) : [];
+    const currentTrackIndex = () => currentTrackItems().findIndex((entry) => entry.id === currentEntry()?.id);
+    const firstTrackIndex = (chapterId, track) => deck.findIndex((entry) => entry.chapterId === chapterId && entry.type === track);
+    const hasAnswer = (entry) => entry?.type === "qa" && entry.answer.length > 0;
+    const isRevealed = (entry) => Boolean(entry && state.revealed[entry.id]);
+    const visibleSlides = (entry, phase) => (phase === "answer" ? entry.answer : entry.prompt);
+    const trackLabel = (track) => track === "qa" ? "Q&A" : "Notes";
+
+    const persist = () => {
+      localStorage.setItem(storageKey, JSON.stringify(state));
+    };
+
+    const normalizeState = () => {
+      if (!deck[state.currentIndex]) {
+        state.currentIndex = 0;
+      }
+
+      if (!chapterStats.some((chapter) => chapter.id === state.currentChapterId)) {
+        state.currentChapterId = chapters[0].id;
+      }
+
+      const chapter = currentChapter();
+      if (state.track && !chapter.availableTracks.includes(state.track)) {
+        state.track = null;
+      }
+
+      if (state.track) {
+        const trackIndex = firstTrackIndex(state.currentChapterId, state.track);
+        if (trackIndex === -1) {
+          state.track = null;
+        } else if (!currentEntry() || currentEntry().chapterId !== state.currentChapterId || currentEntry().type !== state.track) {
+          state.currentIndex = trackIndex;
+        }
+      }
+
+      const entry = currentEntry();
+      if (!entry) {
+        return;
+      }
+
+      if (state.phase === "answer" && (!hasAnswer(entry) || !isRevealed(entry))) {
+        state.phase = "prompt";
+        state.page = 0;
+      }
+
+      const slides = visibleSlides(entry, state.phase);
+      if (!slides[state.page]) {
+        state.page = 0;
+      }
+    };
+
+    const renderHeroBadges = () => {
+      refs.heroBadges.innerHTML = "";
+      [
+        { value: `${chapters.length}`, label: "chapters" },
+        { value: `${totalNotes}`, label: "note pages" },
+        { value: `${totalQaSets}`, label: "Q&A sets" },
+        { value: "mobile", label: "first design" }
+      ].forEach((item) => {
+        const block = document.createElement("div");
+        block.className = "hero-badge";
+        block.innerHTML = `<strong>${item.value}</strong><span>${item.label}</span>`;
+        refs.heroBadges.appendChild(block);
+      });
+    };
+
+    const openHome = () => {
+      state.mode = "home";
+      persist();
+      render();
+    };
+
+    const openChapter = (chapterId) => {
+      state.mode = "chapter";
+      state.currentChapterId = chapterId;
+      state.track = null;
+      state.phase = "prompt";
+      state.page = 0;
+      persist();
+      render();
+    };
+
+    const openTrack = (track) => {
+      const index = firstTrackIndex(state.currentChapterId, track);
+      if (index === -1) {
+        return;
+      }
+      state.track = track;
+      state.currentIndex = index;
+      state.phase = "prompt";
+      state.page = 0;
+      persist();
+      render();
+    };
+
+    const openSet = (index) => {
+      state.mode = "chapter";
+      state.currentIndex = index;
+      state.currentChapterId = deck[index].chapterId;
+      state.track = deck[index].type;
+      state.phase = "prompt";
+      state.page = 0;
+      persist();
+      render();
+    };
+
+    const moveToSiblingSet = (direction) => {
+      const items = currentTrackItems();
+      const position = currentTrackIndex();
+      const nextPosition = position + direction;
+      if (nextPosition < 0 || nextPosition >= items.length) {
+        return;
+      }
+      const target = deck.findIndex((entry) => entry.id === items[nextPosition].id);
+      openSet(target);
+    };
+
+    const revealAnswers = () => {
+      const entry = currentEntry();
+      if (!hasAnswer(entry)) {
+        return;
+      }
+      state.revealed[entry.id] = true;
+      state.phase = "answer";
+      state.page = 0;
+      persist();
+      render();
+    };
+
+    const goBackToQuestion = () => {
+      const entry = currentEntry();
+      if (!hasAnswer(entry)) {
+        return;
+      }
+      state.phase = "prompt";
+      state.page = 0;
+      persist();
+      render();
+    };
+
+    const goPrev = () => {
+      const entry = currentEntry();
+      const slides = visibleSlides(entry, state.phase);
+      if (state.page > 0) {
+        state.page -= 1;
+      } else if (state.phase === "answer") {
+        state.phase = "prompt";
+        state.page = Math.max(entry.prompt.length - 1, 0);
+      } else {
+        moveToSiblingSet(-1);
+        return;
+      }
+      persist();
+      render();
+    };
+
+    const goNext = () => {
+      const entry = currentEntry();
+      const slides = visibleSlides(entry, state.phase);
+      if (state.page < slides.length - 1) {
+        state.page += 1;
+      } else {
+        moveToSiblingSet(1);
+        return;
+      }
+      persist();
+      render();
+    };
+
+    const renderHome = () => {
+      renderHeroBadges();
+      refs.homeChapterGrid.innerHTML = "";
+
+      chapterStats.forEach((chapter) => {
+        const card = document.createElement("button");
+        card.type = "button";
+        card.className = "chapter-card";
+        card.innerHTML = `
+          <div>
+            <div class="eyebrow">Chapter ${chapter.number}</div>
+            <strong>${chapter.title}</strong>
+            <p>${chapter.summary}</p>
+          </div>
+          <div class="chapter-stats">
+            <span class="tiny-pill">${chapter.notesCount} note page${chapter.notesCount > 1 ? "s" : ""}</span>
+            ${chapter.qaCount > 0
+              ? `<span class="tiny-pill">${chapter.qaCount} Q&A set${chapter.qaCount > 1 ? "s" : ""}</span>`
+              : `<span class="tiny-pill">Notes only</span>`}
+          </div>
+        `;
+        card.addEventListener("click", () => openChapter(chapter.id));
+        refs.homeChapterGrid.appendChild(card);
+      });
+    };
+
+    const renderSetGrid = () => {
+      const chapter = currentChapter();
+      const options = [
+        chapter.notesCount > 0
+          ? {
+              track: "notes",
+              title: "Notes",
+              detail: `${chapter.notesCount} note page${chapter.notesCount > 1 ? "s" : ""}`,
+              status: "Read first"
+            }
+          : null,
+        chapter.qaCount > 0
+          ? {
+              track: "qa",
+              title: "Q&A",
+              detail: `${chapter.qaCount} practice set${chapter.qaCount > 1 ? "s" : ""}`,
+              status: "Question first"
+            }
+          : null
+      ].filter(Boolean);
+
+      refs.chapterSetGrid.innerHTML = "";
+      options.forEach((option) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = `set-card${state.track === option.track ? " active" : ""}`;
+        button.innerHTML = `
+          <div>
+            <strong>${option.title}</strong>
+            <p class="soft-copy">${option.detail}</p>
+          </div>
+          <span class="set-status">${option.status}</span>
+        `;
+        button.addEventListener("click", () => openTrack(option.track));
+        refs.chapterSetGrid.appendChild(button);
+      });
+    };
+
+    const renderChapterView = () => {
+      const chapter = currentChapter();
+
+      refs.chapterBadge.textContent = `C${chapter.number}`;
+      refs.chapterEyebrow.textContent = "Chapter View";
+      refs.chapterTitle.textContent = chapter.title;
+      refs.chapterSummary.textContent = chapter.summary;
+      renderSetGrid();
+
+      if (!state.track) {
+        refs.chapterProgressHeadline.textContent = chapter.qaCount > 0
+          ? "Choose Notes or Q&A"
+          : "Notes only chapter";
+        refs.chapterProgressFill.style.width = "0%";
+        refs.chapterProgressCopy.textContent = "Use Home any time to switch chapters.";
+        refs.viewerShell.hidden = true;
+        return;
+      }
+
+      refs.viewerShell.hidden = false;
+
+      const entry = currentEntry();
+      const items = currentTrackItems();
+      const itemIndex = currentTrackIndex();
+      const slides = visibleSlides(entry, state.phase);
+      const noteMode = entry.type === "notes";
+
+      if (noteMode) {
+        const pageProgress = ((state.page + 1) / slides.length) * 100;
+        refs.chapterProgressHeadline.textContent = `Notes page ${state.page + 1} of ${slides.length}`;
+        refs.chapterProgressFill.style.width = `${pageProgress}%`;
+        refs.chapterProgressCopy.textContent = "Swipe or use the arrows to move through the notes.";
+        refs.setProgressHeadline.textContent = "Reading notes";
+        refs.setProgressFill.style.width = `${pageProgress}%`;
+        refs.setProgressCopy.textContent = `${Math.round(pageProgress)}% through the note pages`;
+      } else {
+        const setProgress = ((itemIndex + 1) / items.length) * 100;
+        refs.chapterProgressHeadline.textContent = `${itemIndex + 1} of ${items.length} Q&A sets`;
+        refs.chapterProgressFill.style.width = `${setProgress}%`;
+        refs.chapterProgressCopy.textContent = "Reveal the answer only after you have tried the question.";
+        refs.setProgressHeadline.textContent = `Question ${itemIndex + 1}`;
+        refs.setProgressFill.style.width = `${setProgress}%`;
+        refs.setProgressCopy.textContent = `${Math.round(setProgress)}% through this chapter`;
+      }
+
+      refs.setChapterTag.textContent = `${chapter.title} • ${trackLabel(entry.type)}`;
+      refs.setTitle.textContent = entry.title;
+      refs.setSubtitle.textContent = noteMode
+        ? `${entry.prompt.length} note page${entry.prompt.length > 1 ? "s" : ""} in this chapter`
+        : `${itemIndex + 1} of ${items.length} question-and-answer sets`;
+
+      const pageKind = noteMode ? "Note" : state.phase === "prompt" ? "Question" : "Answer";
+      refs.stageLabel.textContent = `${pageKind} page ${state.page + 1} of ${slides.length}`;
+      refs.stageImage.src = slides[state.page];
+      refs.stageImage.alt = `${entry.title} ${pageKind.toLowerCase()} page ${state.page + 1}`;
+      refs.stageHint.textContent = noteMode
+        ? "Use these pages to recap the chapter before testing yourself."
+        : state.phase === "prompt"
+          ? "Try first, don't be copycat！"
+          : "Check the working, then move on to the next set when ready.";
+
+      refs.toggleBtn.classList.toggle("hidden", noteMode || state.phase === "prompt");
+      refs.toggleBtn.disabled = noteMode || state.phase === "prompt";
+
+      refs.revealBtn.classList.toggle("hidden", noteMode || state.phase === "answer");
+      refs.revealBtn.disabled = noteMode || isRevealed(entry);
+      refs.revealBtn.textContent = isRevealed(entry) ? "Answer Ready" : "Show Answer";
+
+      refs.prevBtn.disabled = itemIndex === 0 && state.phase === "prompt" && state.page === 0;
+      refs.nextBtn.disabled = itemIndex === items.length - 1 && state.page === slides.length - 1;
+
+      refs.contextCopy.textContent = noteMode
+        ? `Page ${state.page + 1} of ${slides.length} in the chapter notes`
+        : state.phase === "prompt"
+          ? "Question on screen"
+          : `Answer page ${state.page + 1} of ${entry.answer.length}`;
+    };
+
+    const render = () => {
+      normalizeState();
+      const isHome = state.mode === "home";
+
+      document.body.classList.toggle("chapter-mode", !isHome);
+      refs.homeMobileBtn.hidden = isHome;
+      refs.homeView.hidden = !isHome;
+      refs.chapterView.hidden = isHome;
+
+      renderHome();
+
+      if (!isHome) {
+        renderChapterView();
+      } else {
+        refs.viewerShell.hidden = true;
+      }
+    };
+
+    refs.prevBtn.addEventListener("click", goPrev);
+    refs.nextBtn.addEventListener("click", goNext);
+    refs.revealBtn.addEventListener("click", revealAnswers);
+    refs.toggleBtn.addEventListener("click", goBackToQuestion);
+    refs.homeTopBtn.addEventListener("click", openHome);
+    refs.homeMobileBtn.addEventListener("click", openHome);
+
+    let touchStart = null;
+
+    refs.stageFrame.addEventListener("touchstart", (event) => {
+      const touch = event.changedTouches[0];
+      touchStart = { x: touch.clientX, y: touch.clientY };
+    }, { passive: true });
+
+    refs.stageFrame.addEventListener("touchend", (event) => {
+      if (!touchStart || state.mode !== "chapter" || !state.track) {
+        touchStart = null;
+        return;
+      }
+
+      const touch = event.changedTouches[0];
+      const deltaX = touch.clientX - touchStart.x;
+      const deltaY = touch.clientY - touchStart.y;
+      touchStart = null;
+
+      if (Math.abs(deltaX) < 48 || Math.abs(deltaX) < Math.abs(deltaY) * 1.2) {
+        return;
+      }
+
+      if (deltaX < 0) {
+        goNext();
+      } else {
+        goPrev();
+      }
+    }, { passive: true });
+
+    document.addEventListener("keydown", (event) => {
+      if (state.mode !== "chapter") {
+        return;
+      }
+
+      if (event.target.matches("input, textarea, select")) {
+        return;
+      }
+
+      if (event.key === "ArrowLeft" && state.track) {
+        event.preventDefault();
+        goPrev();
+      }
+
+      if (event.key === "ArrowRight" && state.track) {
+        event.preventDefault();
+        goNext();
+      }
+
+      if (event.key === " " && state.track && hasAnswer(currentEntry()) && !isRevealed(currentEntry())) {
+        event.preventDefault();
+        revealAnswers();
+      }
+
+      if (event.key.toLowerCase() === "r" && state.track && hasAnswer(currentEntry())) {
+        event.preventDefault();
+        goBackToQuestion();
+      }
+
+      if (event.key.toLowerCase() === "h") {
+        event.preventDefault();
+        openHome();
+      }
+    });
+
+    render();
+  </script>
+</body>
+</html>
